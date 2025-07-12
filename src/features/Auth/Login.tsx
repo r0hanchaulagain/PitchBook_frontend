@@ -1,226 +1,240 @@
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { apiMutation, apiQuery } from "@lib/apiWrapper";
+import { apiMutation } from "@/shared/lib/apiWrapper";
 import { Card, CardHeader, CardTitle, CardContent } from "@ui/card";
 import { Button } from "@ui/button";
 import { Input } from "@ui/input";
 import { Label } from "@ui/label";
-
 import { toast } from "sonner";
 import { Eye, EyeOff } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useUserStore } from "@store/userStore";
-
+import { useAuth, type User } from "@/contexts/AuthContext";
 const loginSchema = z.object({
-	email: z.string().email({ message: "Invalid email address" }),
-	password: z.string(), // No validation for password
+  email: z.string().email({ message: "Invalid email address" }),
+  password: z.string(), // No validation for password
 });
 
 type LoginForm = z.infer<typeof loginSchema>;
 
 export default function Login() {
-	const [showPassword, setShowPassword] = useState(false);
-	const navigate = useNavigate();
-	const {
-		register,
-		handleSubmit,
-		setError,
-		formState: { errors },
-		getValues,
-	} = useForm<LoginForm>({
-		resolver: zodResolver(loginSchema),
-		mode: "onTouched",
-	});
+  const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors },
+    getValues,
+  } = useForm<LoginForm>({
+    resolver: zodResolver(loginSchema),
+    mode: "onTouched",
+  });
 
-	const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
 
-	const loginMutation = useMutation({
-		mutationFn: async (data: LoginForm) =>
-			apiMutation({
-				method: "POST",
-				endpoint: "users/login",
-				body: data,
-			}),
-		onSuccess: async () => {
-			toast.success("Login successful! Redirecting...");
-			// Fetch user profile using apiQuery and hydrate Zustand before navigating
-			const { setUser, setLoading, setError } = useUserStore.getState();
-			setLoading(true);
-			setError(null);
-			try {
-				const res = await apiQuery<{ user: any }>("users/me");
-				setUser(res.user);
-				setLoading(false);
-				// Role-based navigation
-				const role = res.user?.role;
-				if (role === "admin") {
-					navigate("/admin", { replace: true });
-				} else if (role === "futsalOwner") {
-					navigate("/futsal-owner", { replace: true });
-				} else {
-					navigate("/", { replace: true });
-				}
-			} catch (err) {
-				setUser(null);
-				setError("Failed to fetch user profile after login.");
-				setLoading(false);
-			}
-		},
-		onError: (err: any) => {
-			if (err?.field === "email" || err?.field === "password") {
-				setError(err.field, { message: err.message });
-			} else {
-				toast.error(err.message || "Login failed", {
-					style: {
-						background: "#fff0f1",
-						color: "#d32f2f",
-						border: "1px solid #f8bbbc",
-					},
-					icon: <EyeOff color="#d32f2f" size={20} />,
-					position: "bottom-right",
-				});
-			}
-		},
-	});
+  const { login } = useAuth();
 
-	async function handleForgotPassword(e: React.MouseEvent) {
-		e.preventDefault();
-		if (!getValues || !getValues("email")) {
-			toast.error("Please enter your email address before requesting a password reset.");
-			return;
-		}
-		setForgotLoading(true);
-		try {
-			await apiMutation({
-				method: "POST",
-				endpoint: "/users/forgot-password",
-				body: { email: getValues("email") },
-			});
-			navigate("/auth/forgot-status", {
-				state: {
-					status:
-						"If your email is registered, a password reset link has been sent. Please check your inbox (and spam folder).",
-					image: "/mail-sent.png",
-				},
-				replace: true,
-			});
-		} catch (err: any) {
-			toast.error(err.message || "Failed to send reset link. Try again.");
-		} finally {
-			setForgotLoading(false);
-		}
-	}
+  const [isLoading, setIsLoading] = useState(false);
 
-	return (
-		<>
-			<div className="bg-background flex min-h-screen items-center justify-center">
-				<div className="bg-background/80 animate-fade-in-up flex w-full max-w-3xl flex-col items-stretch gap-0 overflow-hidden rounded-md shadow-lg md:flex-row md:gap-0">
-					<div className="bg-background flex flex-1 items-center justify-center p-8">
-						<Card className="w-full max-w-md border-none bg-transparent p-0 shadow-none">
-							<CardHeader>
-								<CardTitle className="w-full text-center text-2xl">Login</CardTitle>
-							</CardHeader>
-							<CardContent>
-								<form
-									onSubmit={handleSubmit((data) => loginMutation.mutate(data))}
-									className="space-y-5"
-									autoComplete="on"
-								>
-									<div className="space-y-2">
-										<Label htmlFor="email">Email</Label>
-										<Input
-											id="email"
-											type="email"
-											placeholder="you@example.com"
-											autoFocus
-											aria-invalid={!!errors.email}
-											className={
-												"transition-all duration-200 focus:scale-[1.03]" +
-												(errors.email
-													? " border-destructive ring-destructive/30 bg-red-50 ring-2"
-													: "")
-											}
-											{...register("email")}
-										/>
-										{errors.email && (
-											<div className="text-destructive animate-fade-in text-xs">
-												{errors.email.message}
-											</div>
-										)}
-									</div>
-									<div className="relative space-y-2">
-										<Label htmlFor="password">Password</Label>
-										<div className="relative">
-											<Input
-												id="password"
-												type={showPassword ? "text" : "password"}
-												placeholder="••••••••"
-												aria-invalid={!!errors?.password}
-												className={
-													"pr-10 transition-all duration-200 focus:scale-[1.03]" +
-													(errors?.password
-														? " border-destructive ring-destructive/30 bg-red-50 ring-2"
-														: "")
-												}
-												{...(register ? register("password") : {})}
-											/>
-											<button
-												type="button"
-												tabIndex={-1}
-												className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2 -translate-y-1/2 focus:outline-none"
-												onClick={() => setShowPassword((v) => !v)}
-												aria-label={showPassword ? "Hide password" : "Show password"}
-											>
-												{showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-											</button>
-										</div>
-										<div className="mt-1 flex justify-end">
-											<button
-												type="button"
-												onClick={handleForgotPassword}
-												className="text-foreground/90 hover:text-primary text-sm font-semibold underline underline-offset-2 transition-colors disabled:opacity-60"
-												style={{ fontFamily: "inherit" }}
-												disabled={forgotLoading}
-											>
-												Forgot password?
-											</button>
-										</div>
-										{errors.password && (
-											<div className="text-destructive animate-fade-in text-xs">
-												{errors.password.message}
-											</div>
-										)}
-									</div>
-									<Button
-										type="submit"
-										className="w-full transition-all duration-150 hover:scale-[1.02]"
-										disabled={loginMutation.isPending}
-									>
-										{loginMutation.isPending ? "Logging in..." : "Login"}
-									</Button>
-									<div className="pt-2 text-center">
-										<a href="/register" className="text-muted-foreground text-sm hover:underline">
-											Not registered yet?{" "}
-											<span className="text-primary font-semibold">Register now!</span>
-										</a>
-									</div>
-								</form>
-							</CardContent>
-						</Card>
-					</div>
-					<div className="relative hidden min-h-[430px] flex-1 md:block">
-						<img
-							src="/images/auth_pages/login-side.png"
-							alt="Login visual"
-							className="absolute inset-0 h-full w-full object-cover object-center select-none"
-							draggable={false}
-						/>
-					</div>
-				</div>
-			</div>
-		</>
-	);
+  const handleLogin = async (data: LoginForm) => {
+    try {
+      setIsLoading(true);
+      const response = await apiMutation<{ user: User; token: string }>({
+        method: "POST",
+        endpoint: "users/login",
+        body: data,
+      });
+
+      // Use AuthContext to set the user state
+      const success = await login(response.user);
+      if (success) {
+        toast.success("Login successful! Redirecting...");
+        // Add a small delay to allow the auth state to update
+        setTimeout(() => {
+          // Role-based navigation
+          if (response.user.role === "admin") {
+            navigate("/admin/dashboard", { replace: true });
+          } else if (response.user.role === "futsalOwner") {
+            navigate("/futsal-owner/dashboard", { replace: true });
+          } else if (response.user.role === "user") {
+            navigate("/dashboard", { replace: true });
+          } else {
+            navigate("/", { replace: true });
+          }
+        }, 100);
+      }
+    } catch (err: any) {
+      console.error("Login error:", err);
+      if (err?.field === "email" || err?.field === "password") {
+        setError(err.field, { message: err.message });
+      } else {
+        toast.error(err.message || "Login failed. Please try again.", {
+          style: {
+            background: "#fff0f1",
+            color: "#d32f2f",
+            border: "1px solid #f8bbbc",
+          },
+          icon: <EyeOff color="#d32f2f" size={20} />,
+          position: "bottom-right",
+        });
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  async function handleForgotPassword(e: React.MouseEvent) {
+    e.preventDefault();
+    if (!getValues || !getValues("email")) {
+      toast.error(
+        "Please enter your email address before requesting a password reset.",
+      );
+      return;
+    }
+    setForgotLoading(true);
+    try {
+      await apiMutation({
+        method: "POST",
+        endpoint: "users/forgot-password",
+        body: { email: getValues("email") },
+      });
+      navigate("/auth/forgot-status", {
+        state: {
+          status:
+            "If your email is registered, a password reset link has been sent. Please check your inbox (and spam folder).",
+          image: "/mail-sent.png",
+        },
+        replace: true,
+      });
+    } catch (err: any) {
+      toast.error(err.message || "Failed to send reset link. Try again.");
+    } finally {
+      setForgotLoading(false);
+    }
+  }
+
+  return (
+    <>
+      <div className="bg-background flex min-h-screen items-center justify-center">
+        <div className="bg-background/80 animate-fade-in-up flex w-full max-w-3xl flex-col items-stretch gap-0 overflow-hidden rounded-md shadow-lg md:flex-row md:gap-0">
+          <div className="bg-background flex flex-1 items-center justify-center p-8">
+            <Card className="w-full max-w-md border-none bg-transparent p-0 shadow-none">
+              <CardHeader>
+                <CardTitle className="w-full text-center text-2xl">
+                  Login
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form
+                  onSubmit={handleSubmit(handleLogin)}
+                  className="space-y-5"
+                  autoComplete="on"
+                >
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="you@example.com"
+                      autoFocus
+                      aria-invalid={!!errors.email}
+                      className={
+                        "transition-all duration-200 focus:scale-[1.03]" +
+                        (errors.email
+                          ? " border-destructive ring-destructive/30 bg-red-50 ring-2"
+                          : "")
+                      }
+                      {...register("email")}
+                    />
+                    {errors.email && (
+                      <div className="text-destructive animate-fade-in text-xs">
+                        {errors.email.message}
+                      </div>
+                    )}
+                  </div>
+                  <div className="relative space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        aria-invalid={!!errors?.password}
+                        className={
+                          "pr-10 transition-all duration-200 focus:scale-[1.03]" +
+                          (errors?.password
+                            ? " border-destructive ring-destructive/30 bg-red-50 ring-2"
+                            : "")
+                        }
+                        {...(register ? register("password") : {})}
+                      />
+                      <button
+                        type="button"
+                        tabIndex={-1}
+                        className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2 -translate-y-1/2 focus:outline-none"
+                        onClick={() => setShowPassword((v) => !v)}
+                        aria-label={
+                          showPassword ? "Hide password" : "Show password"
+                        }
+                      >
+                        {showPassword ? (
+                          <EyeOff size={20} />
+                        ) : (
+                          <Eye size={20} />
+                        )}
+                      </button>
+                    </div>
+                    <div className="mt-1 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={handleForgotPassword}
+                        className="text-foreground/90 hover:text-primary text-sm font-semibold underline underline-offset-2 transition-colors disabled:opacity-60"
+                        style={{ fontFamily: "inherit" }}
+                        disabled={forgotLoading}
+                      >
+                        Forgot password?
+                      </button>
+                    </div>
+                    {errors.password && (
+                      <div className="text-destructive animate-fade-in text-xs">
+                        {errors.password.message}
+                      </div>
+                    )}
+                  </div>
+                  <Button
+                    type="submit"
+                    className="w-full transition-all duration-150 hover:scale-[1.02]"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Logging in..." : "Login"}
+                  </Button>
+                  <div className="pt-2 text-center">
+                    <a
+                      href="/register"
+                      className="text-muted-foreground text-sm hover:underline"
+                    >
+                      Not registered yet?{" "}
+                      <span className="text-primary font-semibold">
+                        Register now!
+                      </span>
+                    </a>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+          <div className="relative hidden min-h-[430px] flex-1 md:block">
+            <img
+              src="/images/auth_pages/login-side.png"
+              alt="Login visual"
+              className="absolute inset-0 h-full w-full object-cover object-center select-none"
+              draggable={false}
+            />
+          </div>
+        </div>
+      </div>
+    </>
+  );
 }

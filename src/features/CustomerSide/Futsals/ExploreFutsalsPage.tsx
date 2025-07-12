@@ -8,24 +8,29 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@ui/dropdown-menu";
-import { ChevronDown, MapPin } from "lucide-react";
+import { ChevronDown, MapPin, Heart } from "lucide-react";
 import { Button } from "@ui/button";
-import { apiQuery } from "@lib/apiWrapper";
+import { Badge } from "@ui/badge";
+import { apiMutation, apiQuery } from "@lib/apiWrapper";
 import { useNavigate } from "react-router-dom";
+import { useFavoritesStore } from "@/shared/store/favoritesStore";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const AMENITIES = [
-  'private locker',
-  'free wifi',
-  'parking',
-  'cafeteria',
-  'free water bottles',
-  'changing room',
+  "private locker",
+  "free wifi",
+  "parking",
+  "cafeteria",
+  "free water bottles",
+  "changing room",
 ];
 
 const SIDES = [5, 6, 7];
 
 const FutsalsPage = () => {
   const navigate = useNavigate();
+  const { user, setUser } = useAuth();
   // Filter/search/sort UI state
   const [sortOption, setSortOption] = useState("price_asc");
   const [searchTerm, setSearchTerm] = useState("");
@@ -34,7 +39,7 @@ const FutsalsPage = () => {
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [selectedSides, setSelectedSides] = useState<number[]>([]);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [limit] = useState(10);
   const [showNearby, setShowNearby] = useState(false);
   const [radius, setRadius] = useState(5); // in km
   const [lat, setLat] = useState<number | null>(null);
@@ -42,6 +47,74 @@ const FutsalsPage = () => {
   const [filtersApplied, setFiltersApplied] = useState(false);
   const [loading, setLoading] = useState(false);
   const [futsals, setFutsals] = useState<any[]>([]);
+  const { addToFavorites, removeFromFavorites, isFavorited, fetchFavorites } =
+    useFavoritesStore();
+
+  // Update futsals with favorite status - this will now be reactive
+  const futsalsWithFavorites = futsals.map((futsal) => ({
+    ...futsal,
+    isFavorite: isFavorited(futsal._id, user?.favoritesFutsal),
+  }));
+
+  // Fetch favorites when user changes
+  useEffect(() => {
+    if (user) {
+      fetchFavorites();
+    }
+  }, [user, fetchFavorites]);
+
+  // Toggle favorite status with optimistic UI updates
+  const toggleFavorite = async (e: React.MouseEvent, futsal: any) => {
+    e.stopPropagation();
+
+    const wasFavorite = isFavorited(futsal._id, user?.favoritesFutsal);
+
+    // Prepare toast for success/error feedback
+    const toastId = toast.loading(
+      wasFavorite ? "Removing from favorites..." : "Adding to favorites...",
+    );
+
+    try {
+      let success = false;
+
+      if (wasFavorite) {
+        // Remove from favorites
+        success = await removeFromFavorites(futsal._id, user, setUser);
+
+        if (success) {
+          toast.success("Removed from favorites", {
+            id: toastId,
+            description: `${futsal.name} has been removed from your favorites.`,
+          });
+        }
+      } else {
+        // Add to favorites
+        success = await addToFavorites(futsal._id, user, setUser);
+
+        if (success) {
+          toast.success("Added to favorites", {
+            id: toastId,
+            description: `${futsal.name} has been added to your favorites.`,
+          });
+        }
+      }
+
+      if (!success) {
+        toast.error("Failed to update favorites", {
+          id: toastId,
+          description: "Please try again.",
+        });
+      }
+    } catch (error: any) {
+      const errorMessage =
+        error.response?.data?.message ||
+        "Failed to update favorites. Please try again.";
+      toast.error("Error updating favorites", {
+        id: toastId,
+        description: errorMessage,
+      });
+    }
+  };
 
   // Debounce search
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -77,8 +150,13 @@ const FutsalsPage = () => {
     }
     // Build query string
     const query = Object.entries(params)
-      .filter(([, v]) => v !== undefined && v !== null && v !== "" && v !== "NaN")
-      .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v as string)}`)
+      .filter(
+        ([, v]) => v !== undefined && v !== null && v !== "" && v !== "NaN",
+      )
+      .map(
+        ([k, v]) =>
+          `${encodeURIComponent(k)}=${encodeURIComponent(v as string)}`,
+      )
       .join("&");
     try {
       const data = await apiQuery<any>(`futsals?${query}`);
@@ -103,23 +181,34 @@ const FutsalsPage = () => {
   useEffect(() => {
     fetchFutsals();
     // eslint-disable-next-line
-  }, [sortOption, minPrice, maxPrice, selectedAmenities, selectedSides, page, limit, showNearby, lat, lng, radius, filtersApplied]);
+  }, [
+    sortOption,
+    minPrice,
+    maxPrice,
+    selectedAmenities,
+    selectedSides,
+    page,
+    limit,
+    showNearby,
+    lat,
+    lng,
+    radius,
+    filtersApplied,
+  ]);
 
   // Handle amenities
   const handleAmenityChange = (amenity: string) => {
     setSelectedAmenities((prev) =>
       prev.includes(amenity)
         ? prev.filter((a) => a !== amenity)
-        : [...prev, amenity]
+        : [...prev, amenity],
     );
   };
 
   // Handle side
   const handleSideChange = (side: number) => {
     setSelectedSides((prev) =>
-      prev.includes(side)
-        ? prev.filter((s) => s !== side)
-        : [...prev, side]
+      prev.includes(side) ? prev.filter((s) => s !== side) : [...prev, side],
     );
   };
 
@@ -135,7 +224,7 @@ const FutsalsPage = () => {
       () => {
         alert("Location access denied");
         setShowNearby(false);
-      }
+      },
     );
   };
 
@@ -169,7 +258,7 @@ const FutsalsPage = () => {
         <img
           className="z-0 h-auto w-full"
           src="/images/futsals_page/search_img.jpg"
-          alt="SoccerSlot"
+          alt="PitchBook"
         />
         <div className="absolute top-0 min-h-full w-full bg-primary/50"></div>
         <Input
@@ -184,10 +273,14 @@ const FutsalsPage = () => {
         </h1>
       </div>
       <div className="flex w-full pr-20 gap-12">
-        <div className="w-[28vw] h-screen bg-background py-12 px-9 shadow-md sticky top-0">
+        <div className="w-[28vw] h-screen bg-background py-12 px-9 shadow-md sticky top-0 border-r border-border">
           <h3 className="mb-4 text-lg font-semibold">Filters</h3>
           <div className="flex items-center gap-2 mb-4">
-            <Button type="button" variant={showNearby ? "default" : "outline"} onClick={handleNearby}>
+            <Button
+              type="button"
+              variant={showNearby ? "default" : "outline"}
+              onClick={handleNearby}
+            >
               <MapPin className="h-4 w-4 mr-1" /> Nearby
             </Button>
             {showNearby && (
@@ -204,8 +297,15 @@ const FutsalsPage = () => {
             )}
           </div>
           <label className="mb-2 block text-sm">Price Range</label>
-          <input type="range" min="500" max="5000" value={maxPrice} onChange={e => setMaxPrice(Number(e.target.value))} className="w-full" />
-          <div className="mt-1 flex justify-between text-sm text-accent">
+          <input
+            type="range"
+            min="500"
+            max="5000"
+            value={maxPrice}
+            onChange={(e) => setMaxPrice(Number(e.target.value))}
+            className="w-full"
+          />
+          <div className="mt-1 flex justify-between text-sm text-muted-foreground">
             <span>Rs. {minPrice}</span>
             <span>Rs. {maxPrice}</span>
           </div>
@@ -237,63 +337,125 @@ const FutsalsPage = () => {
               </label>
             ))}
           </div>
-          <Button className="mt-6 w-full" onClick={handleFilterApply}>Apply Filters</Button>
-          <Button variant={"ghost"} className="mt-2 w-full" onClick={handleReset}>Reset</Button>
+          <Button className="mt-6 w-full" onClick={handleFilterApply}>
+            Apply Filters
+          </Button>
+          <Button
+            variant={"ghost"}
+            className="mt-2 w-full"
+            onClick={handleReset}
+          >
+            Reset
+          </Button>
         </div>
         <div className="w-full">
           <div className="my-8 flex items-center justify-between">
-            <span className="text-primary text-xl font-semibold">{getHeadingText()}</span>
+            <span className="text-primary text-xl font-semibold">
+              {getHeadingText()}
+            </span>
             <DropdownMenu>
               <DropdownMenuTrigger className="flex items-center gap-2 text-primary border p-2 rounded-md">
-                Sort by: {sortOption === "price_asc" ? "Price: Low to High" : "Price: High to Low"} <ChevronDown className="h-4 w-4" />
+                Sort by:{" "}
+                {sortOption === "price_asc"
+                  ? "Price: Low to High"
+                  : "Price: High to Low"}{" "}
+                <ChevronDown className="h-4 w-4" />
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <DropdownMenuLabel>Sort Options</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setSortOption("price_asc")}>Price: Low to High</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortOption("price_desc")}>Price: High to Low</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortOption("price_asc")}>
+                  Price: Low to High
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSortOption("price_desc")}>
+                  Price: High to Low
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          {loading && <div className="text-center py-8">Loading...</div>}
-          {!loading && futsals.map((futsal) => (
-            <div
-              key={futsal._id}
-              className="mb-6 flex overflow-hidden rounded-md bg-primary-foreground shadow-md hover:shadow-lg transition-shadow group"
-            >
-              <img
-                src={Array.isArray(futsal.images) && futsal.images.length > 0 ? futsal.images[0] : "/images/futsals_page/search_img.jpg"}
-                alt="Futsal Court"
-                className="h-40 w-52 object-cover"
-              />
-              <div className="flex-1 p-4">
-                <h4 className="text-lg font-semibold transition-transform duration-200 group-hover:scale-105 group-hover:origin-left">
-                  {futsal.name}
-                </h4>
-                <p className="text-sm text-accent">
-                  {futsal.location?.address || futsal.location?.city || "Location not available"}
-                </p>
-                <p className="text-sm text-accent">
-                  {futsal.side ? `${futsal.side}-a-side` : ''}
-                </p>
-                <p className="text-sm text-accent">
-                  {(futsal.amenities || []).filter((a: string) => a !== "basic futsal facilities").join(" • ")}
-                </p>
+          <div className="space-y-6">
+            {loading ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="animate-pulse bg-muted h-32 rounded-lg"
+                  ></div>
+                ))}
               </div>
-              <div className="flex flex-col items-end justify-center p-4">
-                <span className="text-lg font-bold text-muted-foreground transition-transform duration-200 group-hover:scale-105">
-                  Rs. {futsal.pricing?.dynamicPrice || futsal.pricing?.basePrice || "-"} <span className="text-sm font-normal">per hour</span>
-                </span>
-                <Button
-                  variant="default"
-                  className="mt-3 rounded px-4 py-2"
-                  onClick={() => navigate(`/futsals/${futsal._id}`)}
+            ) : (
+              futsalsWithFavorites.map((futsal) => (
+                <div
+                  key={futsal._id}
+                  className="flex bg-card rounded-lg border border-border overflow-hidden hover:shadow-md transition-shadow"
                 >
-                  View Details
-                </Button>
-              </div>
-            </div>
-          ))}
+                  <div className="w-[25%] h-40 bg-muted flex-shrink-0">
+                    <img
+                      src={
+                        Array.isArray(futsal.images) && futsal.images.length > 0
+                          ? futsal.images[0]
+                          : "/images/futsals_page/search_img.jpg"
+                      }
+                      alt={futsal.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 flex justify-between p-4">
+                    <div className="w-fit flex flex-col">
+                      <h3 className="text-lg font-bold text-foreground">
+                        {futsal.name}
+                      </h3>
+                      <div className="flex gap-1 justify-between items-center mb-2">
+                        <MapPin className="h-4 w-4 mr-1 text-muted-foreground/70" />
+                        <span>
+                          {futsal.location?.address ||
+                            futsal.location?.city ||
+                            "Location not available"}
+                        </span>
+                      </div>
+                      {futsal.side && <Badge>{futsal.side}-a-side</Badge>}
+                    </div>
+                    <div className="flex flex-col items-end h-full justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl font-bold text-foreground">
+                          Rs.{" "}
+                          {futsal.pricing?.dynamicPrice ||
+                            futsal.pricing?.basePrice ||
+                            "-"}
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          per hour
+                        </span>
+                      </div>
+                      <div className="flex gap-2">
+                        {user && user.role === "user" && (
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className={`h-10 w-10 ${futsal.isFavorite ? "bg-foreground/10" : ""}`}
+                            onClick={(e) => toggleFavorite(e, futsal)}
+                          >
+                            <Heart
+                              className={`h-5 w-5 ${futsal.isFavorite ? "fill-foreground" : ""}`}
+                              strokeWidth={futsal.isFavorite ? 2 : 1.5}
+                            />
+                          </Button>
+                        )}
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className="px-5 h-10 hover:bg-foreground/90"
+                          onClick={() => navigate(`/futsals/${futsal._id}`)}
+                        >
+                          View Details
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
           {/* Pagination Controls */}
           <div className="flex justify-center gap-4 my-8">
             <Button

@@ -4,14 +4,14 @@ import FeaturesSection from "@featureComponents/LandingPage/FeaturesSection";
 import TestimonialsSection from "@featureComponents/LandingPage/TestimonialsSection";
 
 const LandingPage = () => {
-	return (
-		<div className="relative">
-			<HeroSection />
-			<IntroSection />
-			<FeaturesSection />
-			<TestimonialsSection />
-		</div>
-	);
+  return (
+    <div className="relative">
+      <HeroSection />
+      <IntroSection />
+      <FeaturesSection />
+      <TestimonialsSection />
+    </div>
+  );
 };
 
 export default LandingPage;

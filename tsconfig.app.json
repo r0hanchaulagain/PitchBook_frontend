@@ -9,21 +9,21 @@
 
     /* Paths Alias */
     "baseUrl": ".",
-		"paths": {
-			"@/*": ["./src/*"],
-			"@components/*": ["./src/shared/components/*"],
+    "paths": {
+      "@/*": ["./src/*"],
+      "@components/*": ["./src/shared/components/*"],
       "@ui/*": ["./src/shared/components/ui/*"],
-			"@features/*": ["./src/features/*"],
-			"@featureComponents/*": ["./src/shared/components/featureComponents/*"],
-			"@layoutComponents/*": ["./src/shared/components/layoutComponents/*"],
-			"@layouts/*": ["./src/shared/layouts/*"],
-			"@store/*": ["./src/shared/store/*"],
+      "@features/*": ["./src/features/*"],
+      "@featureComponents/*": ["./src/shared/components/featureComponents/*"],
+      "@layoutComponents/*": ["./src/shared/components/layoutComponents/*"],
+      "@layouts/*": ["./src/shared/layouts/*"],
+      "@store/*": ["./src/shared/store/*"],
       "@lib/*": ["./src/shared/lib/*"],
-			"@utils/*": ["./src/utils/*"],
-			"@hooks/*": ["./src/hooks/*"],
-			"@assets/*": ["./src/assets/*"],
-			"@types/*": ["./src/types/*"],
-		},
+      "@utils/*": ["./src/utils/*"],
+      "@hooks/*": ["./src/shared/hooks/*"],
+      "@assets/*": ["./src/assets/*"],
+      "@types/*": ["./src/types/*"]
+    },
 
     /* Bundler mode */
     "moduleResolution": "bundler",
