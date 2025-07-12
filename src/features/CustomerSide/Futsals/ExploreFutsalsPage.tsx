@@ -11,7 +11,7 @@ import {
 import { ChevronDown, MapPin, Heart } from "lucide-react";
 import { Button } from "@ui/button";
 import { Badge } from "@ui/badge";
-import { apiMutation, apiQuery } from "@lib/apiWrapper";
+import { apiQuery } from "@lib/apiWrapper";
 import { useNavigate } from "react-router-dom";
 import { useFavoritesStore } from "@/shared/store/favoritesStore";
 import { useAuth } from "@/contexts/AuthContext";
@@ -159,8 +159,9 @@ const FutsalsPage = () => {
       )
       .join("&");
     try {
-      const data = await apiQuery<any>(`futsals?${query}`);
-      setFutsals(data?.futsals || []);
+      const response = await apiQuery<any>(`futsals?${query}`);
+      // The API returns futsals directly in the response.data array
+      setFutsals(response?.data || []);
     } catch (e) {
       setFutsals([]);
     } finally {

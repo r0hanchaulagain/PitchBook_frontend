@@ -8,9 +8,6 @@ export default defineConfig({
   server: {
     port: 3000,
     host: true,
-    // https:{
-    //   rejectUnauthorized: false
-    // },
     hmr: {
       protocol: "ws",
       host: "localhost",
@@ -18,14 +15,16 @@ export default defineConfig({
     },
     proxy: {
       "/api": {
-        target: "http://localhost:8080",
+        target: "https://localhost:8080",
         changeOrigin: true,
+        secure: false,
       },
       // Proxy WebSocket connections
       "/socket.io": {
-        target: "http://localhost:8080",
+        target: "https://localhost:8080",
         ws: true,
         changeOrigin: true,
+        secure: false,
       },
     },
   },
