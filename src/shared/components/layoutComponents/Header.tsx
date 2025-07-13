@@ -14,6 +14,7 @@ import Brand from "@assets/logos/Brand_white.png";
 import { useNotifications } from "@/shared/hooks/useNotifications";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -57,13 +58,15 @@ const Header = () => {
             // Logged in state
             <div className="flex items-center gap-2">
               <li className="flex items-center gap-2">
-                <button
-                  className="relative p-2 text-primary-foreground hover:bg-primary-foreground/10 rounded-full transition-colors"
-                  onClick={() => setIsFavoritesOpen(true)}
-                  aria-label="Favorites"
-                >
-                  <Heart className="w-6 h-6" />
-                </button>
+                {user?.role === "user" && (
+                  <button
+                    className="relative p-2 text-primary-foreground hover:bg-primary-foreground/10 rounded-full transition-colors"
+                    onClick={() => setIsFavoritesOpen(true)}
+                    aria-label="Favorites"
+                  >
+                    <Heart className="w-6 h-6" />
+                  </button>
+                )}
 
                 <div className="relative">
                   <DropdownMenu
@@ -308,9 +311,128 @@ const Header = () => {
           )}
         </ul>
       </nav>
-      <nav className="block pr-7 sm:hidden">
-        <Menu />
-      </nav>
+      <Sheet>
+        <SheetTrigger asChild>
+          <button className="block p-2 pr-7 sm:hidden text-primary-foreground">
+            <Menu className="h-6 w-6" />
+          </button>
+        </SheetTrigger>
+        <SheetContent
+          side="left"
+          className="w-[250px] sm:w-[300px] bg-background p-0"
+        >
+          <div className="flex h-full flex-col">
+            <div className="p-4 border-b">
+              <img className="w-40" src={Brand} alt="SoccerSlot" />
+            </div>
+            <nav className="flex-1 p-4 space-y-2">
+              <SheetClose asChild>
+                <Link
+                  to="/"
+                  className="block px-4 py-2 text-lg hover:bg-accent/50 rounded-md transition-colors"
+                >
+                  Home
+                </Link>
+              </SheetClose>
+              <SheetClose asChild>
+                <Link
+                  to="/join"
+                  className="block px-4 py-2 text-lg hover:bg-accent/50 rounded-md transition-colors"
+                >
+                  Games
+                </Link>
+              </SheetClose>
+              <SheetClose asChild>
+                <Link
+                  to="/futsals"
+                  className="block px-4 py-2 text-lg hover:bg-accent/50 rounded-md transition-colors"
+                >
+                  Book Futsal
+                </Link>
+              </SheetClose>
+
+              {isAuthenticated ? (
+                <div className="pt-4 mt-4 border-t">
+                  <SheetClose asChild>
+                    <button
+                      onClick={() => setIsBookingsOpen(true)}
+                      className="w-full text-left px-4 py-2 text-lg hover:bg-accent/50 rounded-md transition-colors"
+                    >
+                      My Bookings
+                    </button>
+                  </SheetClose>
+                  {user?.role === "user" && (
+                    <SheetClose asChild>
+                      <button
+                        onClick={() => setIsFavoritesOpen(true)}
+                        className="w-full text-left px-4 py-2 text-lg hover:bg-accent/50 rounded-md transition-colors"
+                      >
+                        Favorites
+                      </button>
+                    </SheetClose>
+                  )}
+                  <SheetClose asChild>
+                    <Link
+                      to="/profile"
+                      className="block px-4 py-2 text-lg hover:bg-accent/50 rounded-md transition-colors"
+                    >
+                      Profile
+                    </Link>
+                  </SheetClose>
+                  {user?.role === "admin" && (
+                    <SheetClose asChild>
+                      <Link
+                        to="/admin/dashboard"
+                        className="block px-4 py-2 text-lg hover:bg-accent/50 rounded-md transition-colors"
+                      >
+                        Admin Dashboard
+                      </Link>
+                    </SheetClose>
+                  )}
+                  {user?.role === "futsalOwner" && (
+                    <SheetClose asChild>
+                      <Link
+                        to="/futsal-owner/dashboard"
+                        className="block px-4 py-2 text-lg hover:bg-accent/50 rounded-md transition-colors"
+                      >
+                        Futsal Owner Dashboard
+                      </Link>
+                    </SheetClose>
+                  )}
+                  <SheetClose asChild>
+                    <button
+                      onClick={logout}
+                      className="w-full text-left px-4 py-2 text-lg text-destructive hover:bg-destructive/10 rounded-md transition-colors mt-4"
+                    >
+                      Logout
+                    </button>
+                  </SheetClose>
+                </div>
+              ) : (
+                <div className="pt-4 mt-4 border-t space-y-2">
+                  <SheetClose asChild>
+                    <Button
+                      onClick={() => navigate("/login")}
+                      className="w-full"
+                    >
+                      Login
+                    </Button>
+                  </SheetClose>
+                  <SheetClose asChild>
+                    <Button
+                      variant="outline"
+                      onClick={() => navigate("/register")}
+                      className="w-full"
+                    >
+                      Register
+                    </Button>
+                  </SheetClose>
+                </div>
+              )}
+            </nav>
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Favorites Dialog */}
       <FavoritesDialog
