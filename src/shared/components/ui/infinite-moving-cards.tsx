@@ -91,31 +91,35 @@ export const TestimonialCards = ({
         {items.map((item, idx) => (
           <li
             key={item.name}
-            className="relative w-[350px] max-w-full shrink-0 rounded-2xl border border-b-0 border-card bg-popover p-6"
+            className="relative w-[280px]  sm:w-[320px] md:w-[350px] shrink-0 rounded-2xl border border-b-0 border-card bg-popover p-4 sm:p-6"
           >
             <blockquote>
               <div
                 aria-hidden="true"
                 className="user-select-none pointer-events-none absolute -top-0.5 -left-0.5 -z-1 h-[calc(100%_+_4px)] w-[calc(100%_+_4px)]"
               ></div>
-              <span className="relative z-20 text-lg leading-[1.6] text-card-foreground">
+              <p className="text-sm sm:text-base leading-relaxed text-muted-foreground font-normal">
                 {item.quote}
-              </span>
-              <div className="relative z-20 mt-4 flex flex-row items-center">
+              </p>
+              <div className="mt-3 sm:mt-4 flex items-center">
                 <img
                   src={item.image}
-                  alt={`${item.name}'s profile`}
-                  className="mr-4 h-12 w-12 rounded-full object-cover border border-card"
+                  alt={item.name}
+                  className="h-9 w-9 sm:h-10 sm:w-10 rounded-full object-cover"
                 />
-                <span className="flex flex-col">
-                  <span className="text-sm leading-[1.6] font-normal text-foreground">
+                <div className="ml-3">
+                  <p className="text-sm sm:text-base font-medium">
                     {item.name}
-                  </span>
-                  <div className="flex items-center">
+                  </p>
+                  <div className="flex items-center mt-0.5">
                     {[...Array(5)].map((_, i) => (
                       <svg
                         key={i}
-                        className={`h-5 w-5 ${i < item.rating ? "fill-current text-primary" : "text-accent"}`}
+                        className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${
+                          i < item.rating
+                            ? "fill-current text-primary"
+                            : "text-accent"
+                        }`}
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 20 20"
                         fill="currentColor"
@@ -124,7 +128,7 @@ export const TestimonialCards = ({
                       </svg>
                     ))}
                   </div>
-                </span>
+                </div>
               </div>
             </blockquote>
           </li>
