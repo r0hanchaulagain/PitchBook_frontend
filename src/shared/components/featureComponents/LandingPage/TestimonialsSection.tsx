@@ -18,7 +18,7 @@ const testimonials = [
   },
   {
     quote:
-      "Love how secure and quick the payment process is. SoccerSlot made organizing our weekly futsal games so much simpler.",
+      "Love how secure and quick the payment process is. PitchBook made organizing our weekly futsal games so much simpler.",
     name: "Ethan Brown",
     rating: 5,
     image: "https://picsum.photos/id/3/200/",
@@ -32,7 +32,7 @@ const testimonials = [
   },
   {
     quote:
-      "Found a highly rated court and booked it in minutes. The whole process was seamless, and I’ll definitely use SoccerSlot again!",
+      "Found a highly rated court and booked it in minutes. The whole process was seamless, and I’ll definitely use PitchBook again!",
     name: "Lucas Silva",
     rating: 5,
     image: "https://picsum.photos/id/5/200/",
@@ -42,15 +42,17 @@ const testimonials = [
 const TestimonialsSection = () => {
   return (
     <div className="relative flex h-[40rem] w-full flex-col items-center justify-center gap-20 overflow-hidden rounded-md py-12 antialiased">
-      <h1 className="text-3xl font-bold sm:text-5xl">
-        What people say about Soccerslot
+      <h1 className="text-3xl text-center font-bold sm:text-5xl">
+        What people say about PitchBook
       </h1>
-      <TestimonialCards
-        className="max-w-[95vw]"
-        items={testimonials}
-        direction="right"
-        speed="fast"
-      />
+      <div className="w-full max-w-[95vw] overflow-hidden px-4">
+        <TestimonialCards
+          className="w-full"
+          items={testimonials}
+          direction="right"
+          speed="fast"
+        />
+      </div>
     </div>
   );
 };

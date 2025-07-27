@@ -341,7 +341,7 @@ export default function FutsalOwnerDashboardHome() {
               }) as [string, any][]
             ).map(([key, config]) => {
               const stat =
-                summary.statsToday[key as keyof typeof summary.statsToday];
+                summary.todayStats[key as keyof typeof summary.todayStats];
               const value =
                 typeof stat === "object" ? (stat as any)?.value : stat;
               const label =
@@ -370,12 +370,11 @@ export default function FutsalOwnerDashboardHome() {
               <div className="flex items-baseline justify-center gap-1">
                 <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
                 <span className="text-2xl font-bold text-amber-700 dark:text-amber-300">
-                  {summary.statsToday.rating || "—"}
+                  {summary.totalReviews.value === "-" ? "—" : String(summary.totalReviews.value)}
                 </span>
               </div>
               <p className="text-xs text-amber-700/80 dark:text-amber-300/80 mt-1">
-                {summary.statsToday.reviewCount}{" "}
-                {summary.statsToday.reviewCount === 1 ? "review" : "reviews"}
+                {summary.totalReviews.subtext}
               </p>
             </div>
             <div className="flex justify-between">
@@ -389,7 +388,7 @@ export default function FutsalOwnerDashboardHome() {
                 className="font-semibold"
                 style={{ color: "var(--foreground)" }}
               >
-                {summary.statsToday.reviewCount}
+                {summary.totalReviews.value === "-" ? "0" : String(summary.totalReviews.value)}
               </span>
             </div>
           </CardContent>
@@ -405,8 +404,8 @@ export default function FutsalOwnerDashboardHome() {
           </CardHeader>
           <CardContent className="flex-1 p-3 pt-0 overflow-auto">
             <div className="space-y-3">
-              {summary.schedule.length > 0 ? (
-                summary.schedule.slice(0, 4).map((booking) => (
+              {summary.todaysSchedule.bookings.length > 0 ? (
+                summary.todaysSchedule.bookings.slice(0, 4).map((booking: any) => (
                   <div
                     key={booking.id}
                     className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors"
@@ -415,7 +414,7 @@ export default function FutsalOwnerDashboardHome() {
                       <p className="font-medium">{booking.customerName}</p>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Clock className="h-3.5 w-3.5" />
-                        <span>{booking.timeSlot}</span>
+                        <span>{booking.startTime} - {booking.endTime}</span>
                       </div>
                     </div>
                     <Badge
@@ -435,10 +434,10 @@ export default function FutsalOwnerDashboardHome() {
                   </p>
                 </div>
               )}
-              {summary.schedule.length > 4 && (
+              {summary.todaysSchedule.bookings.length > 4 && (
                 <div className="text-center pt-2">
                   <button className="text-sm text-blue-500 hover:underline">
-                    View all ({summary.schedule.length - 4} more)
+                    View all ({summary.todaysSchedule.bookings.length - 4} more)
                   </button>
                 </div>
               )}
@@ -456,12 +455,12 @@ export default function FutsalOwnerDashboardHome() {
           </CardHeader>
           <CardContent className="flex-1 p-3 pt-0 overflow-auto">
             <div className="space-y-3">
-              {notifications.length === 0 ? (
+              {summary.recentNotifications.notifications.length === 0 ? (
                 <div className="text-sm text-muted-foreground">
                   No notifications.
                 </div>
               ) : (
-                notifications.slice(0, 3).map((notification) => (
+                summary.recentNotifications.notifications.slice(0, 3).map((notification: any) => (
                   <div
                     key={notification._id}
                     className={`p-2 rounded text-sm`}

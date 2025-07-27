@@ -25,38 +25,69 @@ export interface DashboardSummary {
     currency: string;
   };
   totalReviews: {
-    value: number;
+    value: number | string;
     label: string;
     subtext: string;
     icon: string;
     showEmptyState: boolean;
   };
   todayStats: {
-    bookings: number;
-    revenue: number;
-    occupancy: string;
-    rating: string;
-    reviewCount: number;
+    bookings: {
+      value: number;
+      label: string;
+      icon: string;
+    };
+    revenue: {
+      value: number;
+      label: string;
+      icon: string;
+      currency: string;
+    };
+    occupancy: {
+      value: string;
+      label: string;
+      icon: string;
+    };
   };
-  schedule: Array<{
-    id: string;
-    customerName: string;
-    timeSlot: string;
-    status: "confirmed" | "pending" | "cancelled";
-  }>;
-  notifications: Array<any>;
+  todaysSchedule: {
+    bookings: Array<{
+      id: string;
+      startTime: string;
+      endTime: string;
+      customerName: string;
+      status: "confirmed" | "pending" | "cancelled";
+      price: number;
+      bookingType: string;
+      teamA: boolean;
+      teamB: boolean;
+    }>;
+    total: number;
+    hasBookings: boolean;
+  };
+  recentNotifications: {
+    notifications: Array<any>;
+    total: number;
+    hasNotifications: boolean;
+  };
+  futsalId: string;
+  lastUpdated: string;
 }
 
 const fetchDashboardSummary = async (
   futsalId: string,
 ): Promise<DashboardSummary> => {
   const response = await apiQuery<DashboardSummary>(
-    `/futsals/dashboard-summary?futsalId=${futsalId}`,
+    `futsals/dashboard-summary?futsalId=${futsalId}`,
   );
-  // Ensure schedule is always an array
+  // Ensure todaysSchedule.bookings is always an array
   return {
     ...response,
-    schedule: Array.isArray(response.schedule) ? response.schedule : [],
+    todaysSchedule: {
+      ...response.todaysSchedule,
+      bookings: Array.isArray(response.todaysSchedule?.bookings) 
+        ? response.todaysSchedule.bookings 
+        : [],
+    },
   };
 };
 
@@ -98,9 +129,12 @@ export function useDashboardSummary(futsalId: string) {
       setData((prev) => ({
         ...(prev || ({} as DashboardSummary)),
         ...updatedData,
-        schedule: Array.isArray(updatedData.schedule)
-          ? updatedData.schedule
-          : prev?.schedule || [],
+        todaysSchedule: {
+          ...updatedData.todaysSchedule,
+          bookings: Array.isArray(updatedData.todaysSchedule?.bookings)
+            ? updatedData.todaysSchedule.bookings
+            : prev?.todaysSchedule?.bookings || [],
+        },
       }));
     };
 
@@ -115,22 +149,8 @@ export function useDashboardSummary(futsalId: string) {
     };
   }, [futsalId]);
 
-  // Map the API response to the component's expected format with null checks
-  const mappedData = data
-    ? {
-        ...data,
-        statsToday: data.todayStats || {
-          bookings: 0,
-          revenue: 0,
-          occupancy: "0",
-          rating: "0",
-          reviewCount: 0,
-        },
-        totalBookingsToday: data.slotsBooked?.value || 0,
-        totalCollected: data.allTimeCollection?.value || 0,
-        schedule: data.schedule || [],
-      }
-    : null;
+  // Return the data directly since the new structure matches what the component expects
+  const mappedData = data;
 
   return {
     data: mappedData,

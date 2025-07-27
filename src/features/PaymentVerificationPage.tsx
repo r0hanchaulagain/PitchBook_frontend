@@ -19,14 +19,23 @@ const BookingVerify = () => {
     const bookingId = searchParams.get("purchase_order_id");
     const pidx = searchParams.get("pidx");
 
-    console.log(bookingId, pidx, searchParams);
-
     if (!bookingId || !pidx) {
       setStatus("error");
       setMessage("Missing booking ID or payment reference.");
       return;
     }
-    apiQuery(`/bookings/${bookingId}/verify-payment?pidx=${pidx}`)
+
+    // Detect bulk booking by prefix
+    const isBulk = bookingId.startsWith("bulk_");
+
+    let endpoint = "";
+    if (isBulk) {
+      endpoint = `/bookings/bulk/verify-payment?pidx=${pidx}`;
+    } else {
+      endpoint = `/bookings/${bookingId}/verify-payment?pidx=${pidx}`;
+    }
+
+    apiQuery(endpoint)
       .then((res) => {
         setStatus("success");
         setMessage(res.message || "Payment verified. Booking confirmed.");

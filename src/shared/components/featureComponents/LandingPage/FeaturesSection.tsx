@@ -75,7 +75,7 @@ const FeaturesSection: React.FC = () => {
 
   return (
     <section className="flex w-full flex-col items-center justify-center gap-12 py-10 md:py-12">
-      <h1 className="text-3xl font-bold sm:text-5xl">Why SoccerSlot?</h1>
+      <h1 className="text-3xl font-bold sm:text-5xl">Why PitchBook?</h1>
       <div
         ref={sectionRef}
         className="relative mx-auto flex max-w-[90%] flex-wrap items-center justify-center gap-6 py-8"

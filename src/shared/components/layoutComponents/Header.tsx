@@ -10,7 +10,8 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import Brand from "@assets/logos/Brand_white.png";
+import Brand_white from "@assets/logos/Brand_white.png";
+import Brand_black from "@assets/logos/Brand_black.png";
 import { useNotifications } from "@/shared/hooks/useNotifications";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
@@ -38,7 +39,7 @@ const Header = () => {
   return (
     <div className="flex items-center justify-between bg-black py-4 pt-5 pl-5">
       <a href="/">
-        <img className="w-[calc(13vw+5rem)]" src={Brand} alt="" />
+        <img className="w-[calc(13vw+5rem)]" src={Brand_white} alt="" />
       </a>
       <nav className="hidden py-3 pr-5 sm:block">
         <ul className="flex px-4 gap-6 text-[1.25rem] text-primary-foreground justify-between items-center">
@@ -46,11 +47,14 @@ const Header = () => {
             <Link to={"/"} className="hover:underline">
               Home
             </Link>
-            <Link to={"/join"} className="hover:underline">
+            <Link to={"/games"} className="hover:underline">
               Games
             </Link>
             <Link to={"/futsals"} className="hover:underline">
               Book Futsal
+            </Link>
+            <Link to={"/contact"} className="hover:underline">
+              Contact Us
             </Link>
           </div>
 
@@ -323,7 +327,7 @@ const Header = () => {
         >
           <div className="flex h-full flex-col">
             <div className="p-4 border-b">
-              <img className="w-40" src={Brand} alt="SoccerSlot" />
+              <img className="w-40" src={Brand_black} alt="PitchBook" />
             </div>
             <nav className="flex-1 p-4 space-y-2">
               <SheetClose asChild>
@@ -336,7 +340,7 @@ const Header = () => {
               </SheetClose>
               <SheetClose asChild>
                 <Link
-                  to="/join"
+                  to="/games"
                   className="block px-4 py-2 text-lg hover:bg-accent/50 rounded-md transition-colors"
                 >
                   Games

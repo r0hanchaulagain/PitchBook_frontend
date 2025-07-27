@@ -1,5 +1,6 @@
 import { useRoutes, Navigate } from "react-router-dom";
 import { lazy } from "react";
+import ContactUsPage from "@/features/CustomerSide/ContactUsPage";
 import { futsalOwnerSidebarItems, adminSidebarItems } from "./sidebar";
 import Logo from "@assets/logos/Logo.png";
 
@@ -28,6 +29,7 @@ const ResetPassword = lazy(() => import("@features/Auth/ResetPassword"));
 
 // Customer side routes
 const LandingPage = lazy(() => import("@/features/CustomerSide/LandingPage"));
+const GamesPage = lazy(() => import("@/features/CustomerSide/Games/GamesPage"));
 
 // Futsals routes
 const ExploreFutsalsPage = lazy(
@@ -35,6 +37,9 @@ const ExploreFutsalsPage = lazy(
 );
 const FutsalDetailsPage = lazy(
   () => import("@/features/CustomerSide/Futsals/FutsalDetailsPage"),
+);
+const FutsalSelectionPage = lazy(
+  () => import("@/features/CustomerSide/Games/FutsalSelectionPage"),
 );
 
 // Test routes
@@ -78,7 +83,10 @@ export default function AppRoutes() {
       children: [
         { path: "/", element: <LandingPage /> },
         { path: "/futsals", element: <ExploreFutsalsPage /> },
+        { path: "/futsals/select", element: <FutsalSelectionPage /> },
         { path: "/futsals/:id", element: <FutsalDetailsPage /> },
+        { path: "/games", element: <GamesPage /> },
+        { path: "/contact", element: <ContactUsPage /> },
         { path: "/bookings/verify", element: <PaymentVerificationPage /> },
         // {
         // 	element: <RequireAuth />,
