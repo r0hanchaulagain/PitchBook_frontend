@@ -84,8 +84,8 @@ const fetchDashboardSummary = async (
     ...response,
     todaysSchedule: {
       ...response.todaysSchedule,
-      bookings: Array.isArray(response.todaysSchedule?.bookings) 
-        ? response.todaysSchedule.bookings 
+      bookings: Array.isArray(response.todaysSchedule?.bookings)
+        ? response.todaysSchedule.bookings
         : [],
     },
   };

@@ -273,7 +273,7 @@ const FutsalsPage = () => {
           } md:block w-full md:w-60 lg:w-70 bg-background py-6 px-4 sm:px-6 md:px-8 shadow-md md:sticky md:top-0 md:border-r md:border-border mb-4 md:mb-0`}
         >
           <h3 className="mb-4 text-lg font-semibold">Filters</h3>
-          < DropdownMenu>
+          <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center gap-2 text-primary border p-2 rounded-md mb-4">
               <MapPin className="h-4 w-4" /> Nearby
               <ChevronDown className="h-4 w-4" />
@@ -341,11 +341,7 @@ const FutsalsPage = () => {
           <Button className="mt-6 w-full" onClick={handleFilterApply}>
             Apply Filters
           </Button>
-          <Button
-            variant="ghost"
-            className="mt-2 w-full"
-            onClick={handleReset}
-          >
+          <Button variant="ghost" className="mt-2 w-full" onClick={handleReset}>
             Reset
           </Button>
         </div>
@@ -460,9 +456,12 @@ const FutsalsPage = () => {
                 <div className="rounded-full bg-muted mb-4">
                   <img className="h-16 w-16" src={Logo} alt="Logo" />
                 </div>
-                <h3 className="text-2xl font-bold text-foreground mb-2">No futsals found</h3>
+                <h3 className="text-2xl font-bold text-foreground mb-2">
+                  No futsals found
+                </h3>
                 <p className="text-muted-foreground text-sm max-w-md">
-                  We couldn't find any futsals matching your criteria. Try adjusting your filters or search term.
+                  We couldn't find any futsals matching your criteria. Try
+                  adjusting your filters or search term.
                 </p>
               </div>
             )}
@@ -477,7 +476,9 @@ const FutsalsPage = () => {
             >
               Prev
             </Button>
-            <span className="self-center text-sm sm:text-base">Page {page}</span>
+            <span className="self-center text-sm sm:text-base">
+              Page {page}
+            </span>
             <Button
               variant="default"
               disabled={futsals.length < limit}

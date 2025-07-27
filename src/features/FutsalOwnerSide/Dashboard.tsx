@@ -370,7 +370,9 @@ export default function FutsalOwnerDashboardHome() {
               <div className="flex items-baseline justify-center gap-1">
                 <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
                 <span className="text-2xl font-bold text-amber-700 dark:text-amber-300">
-                  {summary.totalReviews.value === "-" ? "—" : String(summary.totalReviews.value)}
+                  {summary.totalReviews.value === "-"
+                    ? "—"
+                    : String(summary.totalReviews.value)}
                 </span>
               </div>
               <p className="text-xs text-amber-700/80 dark:text-amber-300/80 mt-1">
@@ -388,7 +390,9 @@ export default function FutsalOwnerDashboardHome() {
                 className="font-semibold"
                 style={{ color: "var(--foreground)" }}
               >
-                {summary.totalReviews.value === "-" ? "0" : String(summary.totalReviews.value)}
+                {summary.totalReviews.value === "-"
+                  ? "0"
+                  : String(summary.totalReviews.value)}
               </span>
             </div>
           </CardContent>
@@ -405,27 +409,33 @@ export default function FutsalOwnerDashboardHome() {
           <CardContent className="flex-1 p-3 pt-0 overflow-auto">
             <div className="space-y-3">
               {summary.todaysSchedule.bookings.length > 0 ? (
-                summary.todaysSchedule.bookings.slice(0, 4).map((booking: any) => (
-                  <div
-                    key={booking.id}
-                    className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors"
-                  >
-                    <div>
-                      <p className="font-medium">{booking.customerName}</p>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Clock className="h-3.5 w-3.5" />
-                        <span>{booking.startTime} - {booking.endTime}</span>
-                      </div>
-                    </div>
-                    <Badge
-                      variant={
-                        booking.status === "confirmed" ? "default" : "secondary"
-                      }
+                summary.todaysSchedule.bookings
+                  .slice(0, 4)
+                  .map((booking: any) => (
+                    <div
+                      key={booking.id}
+                      className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors"
                     >
-                      {booking.status}
-                    </Badge>
-                  </div>
-                ))
+                      <div>
+                        <p className="font-medium">{booking.customerName}</p>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Clock className="h-3.5 w-3.5" />
+                          <span>
+                            {booking.startTime} - {booking.endTime}
+                          </span>
+                        </div>
+                      </div>
+                      <Badge
+                        variant={
+                          booking.status === "confirmed"
+                            ? "default"
+                            : "secondary"
+                        }
+                      >
+                        {booking.status}
+                      </Badge>
+                    </div>
+                  ))
               ) : (
                 <div className="text-center py-6 space-y-2">
                   <Calendar className="h-10 w-10 mx-auto text-muted-foreground/30" />
@@ -460,29 +470,31 @@ export default function FutsalOwnerDashboardHome() {
                   No notifications.
                 </div>
               ) : (
-                summary.recentNotifications.notifications.slice(0, 3).map((notification: any) => (
-                  <div
-                    key={notification._id}
-                    className={`p-2 rounded text-sm`}
-                    style={{
-                      background: notification.isRead
-                        ? "var(--card)"
-                        : "var(--sidebar-accent)",
-                      borderLeft: notification.isRead
-                        ? undefined
-                        : "4px solid var(--sidebar-accent)",
-                      color: "var(--foreground)",
-                    }}
-                  >
-                    <p className="font-medium">{notification.message}</p>
-                    <p
-                      className="text-xs mt-1"
-                      style={{ color: "var(--muted-foreground)" }}
+                summary.recentNotifications.notifications
+                  .slice(0, 3)
+                  .map((notification: any) => (
+                    <div
+                      key={notification._id}
+                      className={`p-2 rounded text-sm`}
+                      style={{
+                        background: notification.isRead
+                          ? "var(--card)"
+                          : "var(--sidebar-accent)",
+                        borderLeft: notification.isRead
+                          ? undefined
+                          : "4px solid var(--sidebar-accent)",
+                        color: "var(--foreground)",
+                      }}
                     >
-                      {new Date(notification.createdAt).toLocaleString()}
-                    </p>
-                  </div>
-                ))
+                      <p className="font-medium">{notification.message}</p>
+                      <p
+                        className="text-xs mt-1"
+                        style={{ color: "var(--muted-foreground)" }}
+                      >
+                        {new Date(notification.createdAt).toLocaleString()}
+                      </p>
+                    </div>
+                  ))
               )}
             </div>
           </CardContent>

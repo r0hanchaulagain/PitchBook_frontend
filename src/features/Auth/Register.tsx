@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { apiMutation } from "@lib/apiWrapper";
@@ -17,6 +17,7 @@ import {
   DropdownMenuContent,
   DropdownMenuCheckboxItem,
 } from "@ui/dropdown-menu";
+import Altcha from "@/shared/components/ui/Altcha";
 
 const passwordCriteria = [
   { label: "At least 10 characters", test: (pw: string) => pw.length >= 10 },
@@ -52,7 +53,10 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(true);
   const [submitted, setSubmitted] = useState(false);
   const [role, setRole] = useState<"user" | "futsalOwner">("user");
+  const [altchaCompleted, setAltchaCompleted] = useState(false);
   const navigate = useNavigate();
+  const altchaRef = useRef<{ value: string | null }>(null);
+
   const {
     register,
     handleSubmit,
@@ -66,7 +70,7 @@ export default function Register() {
   });
 
   const registerMutation = useMutation({
-    mutationFn: async (data: RegisterForm) =>
+    mutationFn: async (data: RegisterForm & { altcha: any }) =>
       apiMutation({
         method: "POST",
         endpoint: "users/register",
@@ -96,6 +100,21 @@ export default function Register() {
   function onSubmit(data: RegisterForm) {
     setSubmitted(true);
 
+    // Check if ALTCHA is completed
+    const altchaValue = altchaRef.current?.value;
+    if (!altchaValue) {
+      toast.error("Please complete the CAPTCHA verification", {
+        style: {
+          background: "#fff0f1",
+          color: "#d32f2f",
+          border: "1px solid #f8bbbc",
+        },
+        icon: <EyeOff color="#d32f2f" size={20} />,
+        position: "bottom-right",
+      });
+      return;
+    }
+
     // Password validation feedback toast (manual, not zod)
     const password = data.password;
     const failed = passwordCriteria.filter((c) => !c.test(password));
@@ -122,13 +141,28 @@ export default function Register() {
       return;
     }
 
-    registerMutation.mutate({ ...data, role });
+    // Include ALTCHA token in the registration data
+    const registrationData = {
+      ...data,
+      role,
+      altcha: altchaValue,
+    };
+
+    registerMutation.mutate(registrationData);
   }
 
   function handleRoleChange(newRole: "user" | "futsalOwner") {
     setRole(newRole);
     setValue("role", newRole, { shouldDirty: true });
   }
+
+  const handleAltchaStateChange = (ev: Event | CustomEvent) => {
+    if ("detail" in ev && ev.detail.payload) {
+      setAltchaCompleted(true);
+    } else {
+      setAltchaCompleted(false);
+    }
+  };
 
   return (
     <>
@@ -283,6 +317,23 @@ export default function Register() {
                       </div>
                     )}
                   </div>
+
+                  {/* ALTCHA CAPTCHA */}
+                  <div className="space-y-2">
+                    <Label>CAPTCHA Verification</Label>
+                    <div className="border rounded-md p-3 bg-muted/20">
+                      <Altcha
+                        ref={altchaRef}
+                        onStateChange={handleAltchaStateChange}
+                      />
+                    </div>
+                    {submitted && !altchaCompleted && (
+                      <div className="text-destructive animate-fade-in text-xs">
+                        Please complete the CAPTCHA verification
+                      </div>
+                    )}
+                  </div>
+
                   <Button
                     type="submit"
                     className="w-full transition-all duration-150 hover:scale-[1.02]"

@@ -41,7 +41,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@ui/avatar";
 import { Skeleton } from "@ui/skeleton";
 import { useQueryClient } from "@tanstack/react-query";
 
-
 const LeafletMap = lazy(() => import("@components/LeafletMap"));
 
 interface Review {
@@ -126,7 +125,7 @@ const FutsalDetailsPage = () => {
   useEffect(() => {
     // Check URL for partial booking parameter
     const params = new URLSearchParams(window.location.search);
-    const isPartial = params.get('partial') === 'true';
+    const isPartial = params.get("partial") === "true";
     setIsPartialBooking(isPartial);
 
     const fetchDetails = async () => {
@@ -422,7 +421,12 @@ const FutsalDetailsPage = () => {
   }, [futsal, selectedDate]);
 
   const handleBooking = async () => {
-    if (!selectedDate || !selectedStartTime || !selectedEndTime || !futsal?._id) {
+    if (
+      !selectedDate ||
+      !selectedStartTime ||
+      !selectedEndTime ||
+      !futsal?._id
+    ) {
       toast.error("Please select date and time slot");
       return;
     }
@@ -446,28 +450,30 @@ const FutsalDetailsPage = () => {
           bookingType: isPartialBooking ? "partial" : "full",
           teamA: true, // Required for both full and partial booking
           teamB: !isPartialBooking, // true for full booking, false for partial
-          ...(isPartialBooking && { playersNeeded })
+          ...(isPartialBooking && { playersNeeded }),
         },
       });
 
       // Log the full response for debugging
-      console.log('Booking API Response:', response);
-      
+      console.log("Booking API Response:", response);
+
       // Check for success in various possible response formats
-      const isSuccess = 
+      const isSuccess =
         response?._id || // Direct booking object
         response?.data?._id || // Nested in data property
         response?.booking?._id || // Nested in booking property
         response?.success === true; // Explicit success flag
-      
+
       if (isSuccess) {
         // Use the response in this order of preference
         const bookingData = response.booking || response.data || response;
         setBooking(bookingData);
-        
+
         if (isPartialBooking) {
           // For partial bookings, just show success message and don't open payment dialog
-          toast.success("Your game session has been created! Others can now join your game.");
+          toast.success(
+            "Your game session has been created! Others can now join your game.",
+          );
           // Reset form or navigate away if needed
           setSelectedDate("");
           setSelectedStartTime(null);
@@ -475,14 +481,17 @@ const FutsalDetailsPage = () => {
         } else {
           // For full bookings, open payment dialog
           setIsDialogOpen(true);
-          toast.success("Booking created successfully! Please complete your payment.");
+          toast.success(
+            "Booking created successfully! Please complete your payment.",
+          );
         }
       } else {
         console.error("Booking response indicates failure:", response);
-        const errorMessage = response?.message || 
-                           response?.error || 
-                           response?.data?.message || 
-                           "Failed to create booking";
+        const errorMessage =
+          response?.message ||
+          response?.error ||
+          response?.data?.message ||
+          "Failed to create booking";
         toast.error(errorMessage);
       }
     } catch (error: any) {
@@ -516,9 +525,7 @@ const FutsalDetailsPage = () => {
       }
     } catch (e: any) {
       const errorMsg =
-        e?.response?.data?.message ||
-        e.message ||
-        "Payment initiation failed";
+        e?.response?.data?.message || e.message || "Payment initiation failed";
       toast.error(errorMsg);
     } finally {
       setPaymentLoading(false);
@@ -607,7 +614,11 @@ const FutsalDetailsPage = () => {
   };
 
   const handleBulkBooking = async () => {
-    if (!futsal?._id || !bulkBookingData.startDate || bulkBookingData.numberOfDays < 1) {
+    if (
+      !futsal?._id ||
+      !bulkBookingData.startDate ||
+      bulkBookingData.numberOfDays < 1
+    ) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -627,18 +638,22 @@ const FutsalDetailsPage = () => {
 
       // Check for payment URL to determine success for bulk booking
       if (response.paymentUrl) {
-        toast.success("Bulk booking created successfully! Redirecting to payment...");
+        toast.success(
+          "Bulk booking created successfully! Redirecting to payment...",
+        );
         setShowBulkBookingDialog(false);
         setBulkBookingData({
           startDate: "",
           numberOfDays: 1,
         });
-        
+
         // Redirect to payment URL
         window.location.href = response.paymentUrl;
       } else {
         console.error("Unexpected bulk booking response:", response);
-        toast.error("Bulk booking was created but there was an issue with the payment URL");
+        toast.error(
+          "Bulk booking was created but there was an issue with the payment URL",
+        );
       }
     } catch (error: any) {
       console.error("Error creating bulk booking:", error);
@@ -683,7 +698,11 @@ const FutsalDetailsPage = () => {
     return (
       <div className="flex items-center justify-center min-h-[70vh] bg-muted">
         <div className="bg-card shadow-lg rounded-lg p-6 sm:p-8 md:p-10 flex flex-col items-center w-full max-w-xs sm:max-w-sm md:max-w-md">
-          <img src={Logo} alt="PitchBook Logo" className="w-16 h-16 sm:w-20 sm:h-20 mb-4" />
+          <img
+            src={Logo}
+            alt="PitchBook Logo"
+            className="w-16 h-16 sm:w-20 sm:h-20 mb-4"
+          />
           <h2 className="text-xl sm:text-2xl font-bold mb-2 text-primary">
             Futsal Not Found
           </h2>
@@ -712,7 +731,8 @@ const FutsalDetailsPage = () => {
                 futsal.location?.city ||
                 "Location not available"}
               <span className="text-secondary flex items-center">
-                <Star size={14} className="ml-1 mr-1" /> {futsal.pricing?.avgRating || "-"} (
+                <Star size={14} className="ml-1 mr-1" />{" "}
+                {futsal.pricing?.avgRating || "-"} (
                 {futsal.pricing?.reviewCount || 0} ratings)
               </span>
             </p>
@@ -735,12 +755,16 @@ const FutsalDetailsPage = () => {
                     : "Add to Favorites"}
               </Button>
             )}
-            <Button variant="outline" onClick={handleShareClick} className="h-8 sm:h-10 text-xs sm:text-sm">
+            <Button
+              variant="outline"
+              onClick={handleShareClick}
+              className="h-8 sm:h-10 text-xs sm:text-sm"
+            >
               <Share2 className="h-4 w-4 mr-1 sm:mr-2" /> Share
             </Button>
             <Button
-              variant="outline" 
-              onClick={() => setShowBulkBookingDialog(true)} 
+              variant="outline"
+              onClick={() => setShowBulkBookingDialog(true)}
               className="h-8 sm:h-10 text-xs sm:text-sm"
             >
               <Users className="h-4 w-4 mr-1 sm:mr-2" />
@@ -930,9 +954,7 @@ const FutsalDetailsPage = () => {
                   onClick={handleBooking}
                   className="w-full sm:w-auto"
                 >
-                  {isPartialBooking 
-                    ? "Create Game Session" 
-                    : "Book Now"}
+                  {isPartialBooking ? "Create Game Session" : "Book Now"}
                 </Button>
               </div>
               {isPartialBooking && (
@@ -944,19 +966,27 @@ const FutsalDetailsPage = () => {
                     min="1"
                     max={futsal?.capacity || 10}
                     value={playersNeeded}
-                    onChange={(e) => setPlayersNeeded(parseInt(e.target.value) || 1)}
+                    onChange={(e) =>
+                      setPlayersNeeded(parseInt(e.target.value) || 1)
+                    }
                     className="w-full"
                   />
                   <p className="text-sm text-muted-foreground">
-                    How many more players do you need? (Max: {futsal?.capacity || 10 - 1})
+                    How many more players do you need? (Max:{" "}
+                    {futsal?.capacity || 10 - 1})
                   </p>
                 </div>
               )}
             </div>
             <div className="mt-8 sm:mt-12">
-              <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-primary">Reviews</h2>
+              <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-primary">
+                Reviews
+              </h2>
               {user && user.role === "user" && (
-                <Card id="review-form" className="p-4 sm:p-6 mb-6 sm:mb-8 bg-popover">
+                <Card
+                  id="review-form"
+                  className="p-4 sm:p-6 mb-6 sm:mb-8 bg-popover"
+                >
                   <h3 className="text-lg sm:text-xl font-semibold mb-4">
                     {editingReviewId ? "Edit Your Review" : "Write a Review"}
                   </h3>
@@ -1009,7 +1039,11 @@ const FutsalDetailsPage = () => {
                           Cancel
                         </Button>
                       )}
-                      <Button type="submit" disabled={submittingReview} className="h-8 sm:h-10 text-xs sm:text-sm">
+                      <Button
+                        type="submit"
+                        disabled={submittingReview}
+                        className="h-8 sm:h-10 text-xs sm:text-sm"
+                      >
                         {submittingReview
                           ? "Submitting..."
                           : editingReviewId
@@ -1055,7 +1089,7 @@ const FutsalDetailsPage = () => {
                                   .join("")}
                               </AvatarFallback>
                             </Avatar>
-            <div>
+                            <div>
                               <h4 className="font-medium text-sm sm:text-base">
                                 {review.user.fullName}
                               </h4>
@@ -1128,122 +1162,121 @@ const FutsalDetailsPage = () => {
             <CardContent className="p-0 space-y-4">
               <Card className="bg-popover p-4 sm:p-6">
                 <h2 className="text-lg sm:text-xl font-semibold text-primary mb-4">
-                    Timing
-                  </h2>
-                  <div className="space-y-1 mb-4">
-                    {futsal.operatingHours ? (
-                      Object.entries(futsal.operatingHours).map(
-                        ([day, hours]: any) => {
-                          const todayIdx = new Date().getDay();
-                          const days = [
-                            "sunday",
-                            "monday",
-                            "tuesday",
-                            "wednesday",
-                            "thursday",
-                            "friday",
-                            "saturday",
-                          ];
-                          const isToday = days[todayIdx] === day.toLowerCase();
-                          return (
-                            <div
-                              key={day}
+                  Timing
+                </h2>
+                <div className="space-y-1 mb-4">
+                  {futsal.operatingHours ? (
+                    Object.entries(futsal.operatingHours).map(
+                      ([day, hours]: any) => {
+                        const todayIdx = new Date().getDay();
+                        const days = [
+                          "sunday",
+                          "monday",
+                          "tuesday",
+                          "wednesday",
+                          "thursday",
+                          "friday",
+                          "saturday",
+                        ];
+                        const isToday = days[todayIdx] === day.toLowerCase();
+                        return (
+                          <div
+                            key={day}
                             className={`flex gap-2 items-center rounded p-1 sm:p-1.5 text-sm sm:text-base ${
-                              isToday ? "bg-accent font-bold text-accent-foreground" : ""
+                              isToday
+                                ? "bg-accent font-bold text-accent-foreground"
+                                : ""
                             }`}
-                            >
+                          >
                             <span className="font-medium w-20 sm:w-24 capitalize">
-                                {day}:
+                              {day}:
+                            </span>
+                            <span className="font-mono text-muted-foreground">
+                              {hours.open} - {hours.close}
+                            </span>
+                            {isToday && (
+                              <span className="ml-2 px-2 py-0.5 rounded bg-primary text-xs">
+                                Today
                               </span>
-                              <span className="font-mono text-muted-foreground">
-                                {hours.open} - {hours.close}
-                              </span>
-                              {isToday && (
-                                <span className="ml-2 px-2 py-0.5 rounded bg-primary text-xs">
-                                  Today
-                                </span>
-                              )}
-                            </div>
-                          );
-                        },
-                      )
-                    ) : (
-                    <span className="text-muted-foreground text-sm">N/A</span>
-                    )}
-                  </div>
-                <h2 className="text-lg sm:text-xl font-semibold text-primary mb-4">
-                    Amenities
-                  </h2>
-                <div className="flex flex-wrap gap-2">
-                    {(futsal.amenities || [])
-                      .filter((a: string) => a !== "basic futsal facilities")
-                      .map((a: string) => (
-                        <Badge
-                          key={a}
-                        className="text-xs sm:text-sm font-medium px-2 sm:px-3 py-1"
-                        >
-                          {a.charAt(0).toUpperCase() + a.slice(1)}
-                        </Badge>
-                      ))}
-                  </div>
-                </Card>
-              <div className="bg-popover p-4 sm:p-6 rounded-md shadow-md">
-                <h2 className="text-lg sm:text-xl font-semibold text-primary mb-4">
-                    Pricing
-                  </h2>
-                <span className="text-sm sm:text-base">
-                    Today's Price: Rs.{" "}
-                    {futsal.pricing?.finalPrice?.toLocaleString()}
-                  </span>
-                </div>
-              <div className="bg-popover p-4 sm:p-6 rounded-md shadow-md">
-                <h2 className="text-lg sm:text-xl font-semibold text-primary mb-2">
-                    Location
-                  </h2>
-                <p className="text-sm sm:text-base text-muted-foreground mb-2">
-                    {futsal.location?.address ||
-                      futsal.location?.city ||
-                      "Location not available"}
-                  </p>
-                  {futsal.location?.coordinates?.coordinates &&
-                    !showMapModal && (
-                      <Suspense
-                        fallback={
-                        <div className="h-40 sm:h-48 w-full">
-                            Loading map...
+                            )}
                           </div>
-                        }
-                      >
-                        <LeafletMap
-                          center={[
-                            futsal.location.coordinates.coordinates[1],
-                            futsal.location.coordinates.coordinates[0],
-                          ]}
-                          zoom={16}
-                          height={200}
-                          width={"100%"}
-                          markerLabel={futsal.name}
-                        />
-                      </Suspense>
-                    )}
-                  <button
-                  className="text-success text-sm sm:text-base underline mt-2"
-                    onClick={() => setShowMapModal(true)}
-                  >
-                    View larger map
-                  </button>
+                        );
+                      },
+                    )
+                  ) : (
+                    <span className="text-muted-foreground text-sm">N/A</span>
+                  )}
                 </div>
+                <h2 className="text-lg sm:text-xl font-semibold text-primary mb-4">
+                  Amenities
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                  {(futsal.amenities || [])
+                    .filter((a: string) => a !== "basic futsal facilities")
+                    .map((a: string) => (
+                      <Badge
+                        key={a}
+                        className="text-xs sm:text-sm font-medium px-2 sm:px-3 py-1"
+                      >
+                        {a.charAt(0).toUpperCase() + a.slice(1)}
+                      </Badge>
+                    ))}
+                </div>
+              </Card>
+              <div className="bg-popover p-4 sm:p-6 rounded-md shadow-md">
+                <h2 className="text-lg sm:text-xl font-semibold text-primary mb-4">
+                  Pricing
+                </h2>
+                <span className="text-sm sm:text-base">
+                  Today's Price: Rs.{" "}
+                  {futsal.pricing?.finalPrice?.toLocaleString()}
+                </span>
+              </div>
               <div className="bg-popover p-4 sm:p-6 rounded-md shadow-md">
                 <h2 className="text-lg sm:text-xl font-semibold text-primary mb-2">
-                    Contact Information
-                  </h2>
+                  Location
+                </h2>
+                <p className="text-sm sm:text-base text-muted-foreground mb-2">
+                  {futsal.location?.address ||
+                    futsal.location?.city ||
+                    "Location not available"}
+                </p>
+                {futsal.location?.coordinates?.coordinates && !showMapModal && (
+                  <Suspense
+                    fallback={
+                      <div className="h-40 sm:h-48 w-full">Loading map...</div>
+                    }
+                  >
+                    <LeafletMap
+                      center={[
+                        futsal.location.coordinates.coordinates[1],
+                        futsal.location.coordinates.coordinates[0],
+                      ]}
+                      zoom={16}
+                      height={200}
+                      width={"100%"}
+                      markerLabel={futsal.name}
+                    />
+                  </Suspense>
+                )}
+                <button
+                  className="text-success text-sm sm:text-base underline mt-2"
+                  onClick={() => setShowMapModal(true)}
+                >
+                  View larger map
+                </button>
+              </div>
+              <div className="bg-popover p-4 sm:p-6 rounded-md shadow-md">
+                <h2 className="text-lg sm:text-xl font-semibold text-primary mb-2">
+                  Contact Information
+                </h2>
                 <p className="text-sm sm:text-base text-muted-foreground flex items-center">
                   <Phone size={14} className="mr-2" />{" "}
-                    {futsal.contactInfo?.phone || "N/A"}
-                  </p>
+                  {futsal.contactInfo?.phone || "N/A"}
+                </p>
                 <p className="text-sm sm:text-base text-muted-foreground mt-2">
-                    {futsal.location?.city || "N/A"}
-                  </p>
+                  {futsal.location?.city || "N/A"}
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -1261,7 +1294,9 @@ const FutsalDetailsPage = () => {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <h3 className="text-base sm:text-lg font-semibold">Booking Details</h3>
+              <h3 className="text-base sm:text-lg font-semibold">
+                Booking Details
+              </h3>
               <p className="text-xs sm:text-sm text-muted-foreground">
                 <strong>Futsal:</strong> {futsal.name}
               </p>
@@ -1280,7 +1315,11 @@ const FutsalDetailsPage = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="h-8 sm:h-10 text-xs sm:text-sm">
+            <Button
+              variant="outline"
+              onClick={() => setIsDialogOpen(false)}
+              className="h-8 sm:h-10 text-xs sm:text-sm"
+            >
               Cancel
             </Button>
             <Button
@@ -1288,12 +1327,12 @@ const FutsalDetailsPage = () => {
               onClick={handleProceedToPayment}
               disabled={paymentLoading}
             >
-               <img
-                  src="https://avatars.githubusercontent.com/u/31564639?s=280&v=4"
-                  className="size-6 sm:size-8"
-                />
+              <img
+                src="https://avatars.githubusercontent.com/u/31564639?s=280&v=4"
+                className="size-6 sm:size-8"
+              />
               Pay with Khalti
-              </Button>
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1309,13 +1348,13 @@ const FutsalDetailsPage = () => {
             >
               ×
             </button>
-            <h2 className="text-lg sm:text-xl font-semibold mb-4">Futsal Location</h2>
+            <h2 className="text-lg sm:text-xl font-semibold mb-4">
+              Futsal Location
+            </h2>
             {futsal.location?.coordinates?.coordinates && (
               <Suspense
                 fallback={
-                  <div className="h-64 sm:h-96 w-full">
-                    Loading map...
-                  </div>
+                  <div className="h-64 sm:h-96 w-full">Loading map...</div>
                 }
               >
                 <LeafletMap
@@ -1343,7 +1382,11 @@ const FutsalDetailsPage = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="flex items-center gap-2">
-            <Input value={window.location.href} readOnly className="flex-1 text-xs sm:text-sm" />
+            <Input
+              value={window.location.href}
+              readOnly
+              className="flex-1 text-xs sm:text-sm"
+            />
             <Button
               variant="outline"
               size="icon"
@@ -1358,7 +1401,11 @@ const FutsalDetailsPage = () => {
             </Button>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowShareDialog(false)} className="h-8 sm:h-10 text-xs sm:text-sm">
+            <Button
+              variant="outline"
+              onClick={() => setShowShareDialog(false)}
+              className="h-8 sm:h-10 text-xs sm:text-sm"
+            >
               Close
             </Button>
           </DialogFooter>
@@ -1406,7 +1453,10 @@ const FutsalDetailsPage = () => {
       </Dialog>
 
       {/* Bulk Booking Dialog */}
-      <Dialog open={showBulkBookingDialog} onOpenChange={setShowBulkBookingDialog}>
+      <Dialog
+        open={showBulkBookingDialog}
+        onOpenChange={setShowBulkBookingDialog}
+      >
         <DialogContent className="sm:max-w-[90vw] md:max-w-[500px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -1414,10 +1464,11 @@ const FutsalDetailsPage = () => {
               Bulk / Corporate Booking
             </DialogTitle>
             <DialogDescription>
-              Book multiple days for corporate events, tournaments, or extended bookings.
+              Book multiple days for corporate events, tournaments, or extended
+              bookings.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="startDate" className="flex items-center gap-2">
@@ -1428,10 +1479,12 @@ const FutsalDetailsPage = () => {
                 id="startDate"
                 type="date"
                 value={bulkBookingData.startDate}
-                onChange={(e) => setBulkBookingData(prev => ({
-                  ...prev,
-                  startDate: e.target.value
-                }))}
+                onChange={(e) =>
+                  setBulkBookingData((prev) => ({
+                    ...prev,
+                    startDate: e.target.value,
+                  }))
+                }
                 min={new Date().toISOString().slice(0, 10)}
                 className="w-full"
                 required
@@ -1449,10 +1502,12 @@ const FutsalDetailsPage = () => {
                 min="1"
                 max="30"
                 value={bulkBookingData.numberOfDays}
-                onChange={(e) => setBulkBookingData(prev => ({
-                  ...prev,
-                  numberOfDays: parseInt(e.target.value) || 1
-                }))}
+                onChange={(e) =>
+                  setBulkBookingData((prev) => ({
+                    ...prev,
+                    numberOfDays: parseInt(e.target.value) || 1,
+                  }))
+                }
                 className="w-full"
                 required
               />
@@ -1461,30 +1516,46 @@ const FutsalDetailsPage = () => {
               </p>
             </div>
 
-
-
             <div className="bg-muted p-4 rounded-lg">
               <h4 className="font-semibold text-sm mb-2">Booking Summary</h4>
               <div className="space-y-1 text-sm text-muted-foreground">
-                <p><strong>Futsal:</strong> {futsal?.name}</p>
-                <p><strong>Start Date:</strong> {bulkBookingData.startDate || "Not selected"}</p>
-                <p><strong>Duration:</strong> {bulkBookingData.numberOfDays} day{bulkBookingData.numberOfDays !== 1 ? 's' : ''}</p>
-                <p><strong>Type:</strong> Full Day</p>
-                {bulkBookingData.startDate && bulkBookingData.numberOfDays > 0 && (
-                  <p><strong>End Date:</strong> {
-                    new Date(
-                      new Date(bulkBookingData.startDate).getTime() + 
-                      (bulkBookingData.numberOfDays - 1) * 24 * 60 * 60 * 1000
-                    ).toISOString().slice(0, 10)
-                  }</p>
-                )}
+                <p>
+                  <strong>Futsal:</strong> {futsal?.name}
+                </p>
+                <p>
+                  <strong>Start Date:</strong>{" "}
+                  {bulkBookingData.startDate || "Not selected"}
+                </p>
+                <p>
+                  <strong>Duration:</strong> {bulkBookingData.numberOfDays} day
+                  {bulkBookingData.numberOfDays !== 1 ? "s" : ""}
+                </p>
+                <p>
+                  <strong>Type:</strong> Full Day
+                </p>
+                {bulkBookingData.startDate &&
+                  bulkBookingData.numberOfDays > 0 && (
+                    <p>
+                      <strong>End Date:</strong>{" "}
+                      {new Date(
+                        new Date(bulkBookingData.startDate).getTime() +
+                          (bulkBookingData.numberOfDays - 1) *
+                            24 *
+                            60 *
+                            60 *
+                            1000,
+                      )
+                        .toISOString()
+                        .slice(0, 10)}
+                    </p>
+                  )}
               </div>
             </div>
           </div>
 
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setShowBulkBookingDialog(false)}
               disabled={bulkBookingLoading}
               className="h-8 sm:h-10 text-xs sm:text-sm"
@@ -1493,10 +1564,16 @@ const FutsalDetailsPage = () => {
             </Button>
             <Button
               onClick={handleBulkBooking}
-              disabled={bulkBookingLoading || !bulkBookingData.startDate || bulkBookingData.numberOfDays < 1}
+              disabled={
+                bulkBookingLoading ||
+                !bulkBookingData.startDate ||
+                bulkBookingData.numberOfDays < 1
+              }
               className="h-8 sm:h-10 text-xs sm:text-sm"
             >
-              {bulkBookingLoading ? "Creating Booking..." : "Create Bulk Booking"}
+              {bulkBookingLoading
+                ? "Creating Booking..."
+                : "Create Bulk Booking"}
             </Button>
           </DialogFooter>
         </DialogContent>
