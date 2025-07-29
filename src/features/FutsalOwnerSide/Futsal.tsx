@@ -22,7 +22,6 @@ export default function Futsal() {
   const [newImageFiles, setNewImageFiles] = useState<(File | null)[]>([]);
   const [removedImageIndexes, setRemovedImageIndexes] = useState<number[]>([]);
 
-  // Type for API response
   type FutsalApiResponse = { futsal?: any };
 
   useEffect(() => {
@@ -48,7 +47,6 @@ export default function Futsal() {
     setForm({ ...form, [e.target.name]: Number(e.target.value) });
   };
 
-  // Handler for contact info
   const handleContactChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({
       ...form,
@@ -59,7 +57,6 @@ export default function Futsal() {
     });
   };
 
-  // Handler for operating hours
   const handleOperatingHoursChange = (
     e: React.ChangeEvent<HTMLInputElement>,
   ) => {
@@ -76,7 +73,6 @@ export default function Futsal() {
     });
   };
 
-  // Handler for pricing modifiers
   const handlePricingModifierChange = (
     e: React.ChangeEvent<HTMLInputElement>,
   ) => {
@@ -99,7 +95,6 @@ export default function Futsal() {
     });
   };
 
-  // Handler for image file change (staged, not uploaded yet)
   const handleImageChange = (
     index: number,
     e: React.ChangeEvent<HTMLInputElement>,
@@ -116,7 +111,6 @@ export default function Futsal() {
     }
   };
 
-  // Handler to trigger file input
   const triggerImageInput = (index: number) => {
     const input = document.getElementById(
       `futsal-image-input-${index}`,
@@ -124,7 +118,6 @@ export default function Futsal() {
     if (input) input.click();
   };
 
-  // Handler for amenities
   const handleAmenityEdit = (index: number) => {
     setEditingAmenityIdx(index);
   };
@@ -149,7 +142,6 @@ export default function Futsal() {
     setForm({ ...form, amenities: newAmenities });
   };
 
-  // Handler to add a new image slot (up to 4)
   const handleAddImage = () => {
     if (localImages.length < 4) {
       setLocalImages([...localImages, ""]);
@@ -157,7 +149,6 @@ export default function Futsal() {
     }
   };
 
-  // Handler to remove an image (staged, not removed yet)
   const handleRemoveImage = (index: number) => {
     setRemovedImageIndexes([...removedImageIndexes, index]);
     const updatedImages = localImages.filter((_, i) => i !== index);
@@ -166,17 +157,14 @@ export default function Futsal() {
     setNewImageFiles(updatedFiles);
   };
 
-  // On save, upload new images and update form.images
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     let updatedImages = form.images ? [...form.images] : [];
-    // Remove images marked for removal
     removedImageIndexes
       .sort((a, b) => b - a)
       .forEach((idx) => {
         updatedImages.splice(idx, 1);
       });
-    // Upload new images and replace local URLs with server URLs
     for (let i = 0; i < newImageFiles.length; i++) {
       const file = newImageFiles[i];
       if (file) {
@@ -189,7 +177,6 @@ export default function Futsal() {
         }
       }
     }
-    // Update form and submit
     updateFutsal.mutate(
       { ...form, images: updatedImages },
       {
@@ -347,7 +334,6 @@ export default function Futsal() {
                         futsal.amenities.map(
                           (amenity: string, index: number) => (
                             <div key={index} className="relative group">
-                              {/* Cross icon for delete */}
                               <button
                                 type="button"
                                 className="absolute -top-2 -right-2 z-10 bg-destructive text-white rounded-full p-0.5 shadow hover:bg-destructive/80 opacity-80 group-hover:opacity-100 transition-opacity"
@@ -356,7 +342,6 @@ export default function Futsal() {
                               >
                                 <XIcon className="w-3 h-3" />
                               </button>
-                              {/* Badge for amenity, click to edit */}
                               {editingAmenityIdx === index ? (
                                 <input
                                   type="text"
@@ -392,7 +377,6 @@ export default function Futsal() {
                             </div>
                           ),
                         )}
-                      {/* Add badge */}
                       <button
                         type="button"
                         className="ml-2 px-2 py-0.5 border border-dashed border-primary text-primary rounded-md text-xs font-medium hover:bg-primary/10 transition-colors"
@@ -639,7 +623,6 @@ export default function Futsal() {
                       )}
                     </div>
                     <div className="text-xs font-semibold mt-2">Modifiers:</div>
-                    {/* Holiday Modifier */}
                     <div className="text-xs ml-2 flex items-center gap-2">
                       Holiday:
                       {editMode ? (
@@ -674,7 +657,6 @@ export default function Futsal() {
                         </>
                       )}
                     </div>
-                    {/* Weekend Modifier */}
                     <div className="text-xs ml-2 flex items-center gap-2">
                       Weekend:
                       {editMode ? (
@@ -709,7 +691,6 @@ export default function Futsal() {
                         </>
                       )}
                     </div>
-                    {/* Time of Day Modifier */}
                     <div className="text-xs ml-2 flex items-center gap-2">
                       Time of Day:
                       {editMode ? (
@@ -729,7 +710,6 @@ export default function Futsal() {
                         </>
                       )}
                     </div>
-                    {/* Time of Day Subfields */}
                     <div className="ml-6 space-y-1">
                       <div className="text-xs flex items-center gap-2">
                         Morning:
@@ -789,7 +769,6 @@ export default function Futsal() {
                         )}
                       </div>
                     </div>
-                    {/* Location Modifier */}
                     <div className="text-xs ml-2 flex items-center gap-2">
                       Location:
                       {editMode ? (

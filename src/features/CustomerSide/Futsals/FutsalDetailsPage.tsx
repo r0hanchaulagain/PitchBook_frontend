@@ -66,7 +66,6 @@ const FutsalDetailsPage = () => {
   const [loading, setLoading] = useState(true);
   const queryClient = useQueryClient();
 
-  // Reviews state
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
   const [page, setPage] = useState(1);
@@ -114,7 +113,6 @@ const FutsalDetailsPage = () => {
     useFavoritesStore();
   const [favLoading, setFavLoading] = useState(false);
 
-  // Bulk booking state
   const [showBulkBookingDialog, setShowBulkBookingDialog] = useState(false);
   const [bulkBookingData, setBulkBookingData] = useState({
     startDate: "",
@@ -123,7 +121,6 @@ const FutsalDetailsPage = () => {
   const [bulkBookingLoading, setBulkBookingLoading] = useState(false);
 
   useEffect(() => {
-    // Check URL for partial booking parameter
     const params = new URLSearchParams(window.location.search);
     const isPartial = params.get("partial") === "true";
     setIsPartialBooking(isPartial);
@@ -134,7 +131,6 @@ const FutsalDetailsPage = () => {
         const data = await apiQuery<any>(`futsals/${id}`);
         setFutsal(data.futsal);
         if (isPartial) {
-          // Set default players needed for partial booking
           setPlayersNeeded(Math.ceil((data.futsal.capacity || 10) / 2));
         }
       } catch (e) {
@@ -448,38 +444,32 @@ const FutsalDetailsPage = () => {
           startTime: selectedStartTime.format("HH:mm"),
           endTime: selectedEndTime.format("HH:mm"),
           bookingType: isPartialBooking ? "partial" : "full",
-          teamA: true, // Required for both full and partial booking
-          teamB: !isPartialBooking, // true for full booking, false for partial
+          teamA: true,
+          teamB: !isPartialBooking,
           ...(isPartialBooking && { playersNeeded }),
         },
       });
 
-      // Log the full response for debugging
       console.log("Booking API Response:", response);
 
-      // Check for success in various possible response formats
       const isSuccess =
-        response?._id || // Direct booking object
-        response?.data?._id || // Nested in data property
-        response?.booking?._id || // Nested in booking property
-        response?.success === true; // Explicit success flag
+        response?._id ||
+        response?.data?._id ||
+        response?.booking?._id ||
+        response?.success === true;
 
       if (isSuccess) {
-        // Use the response in this order of preference
         const bookingData = response.booking || response.data || response;
         setBooking(bookingData);
 
         if (isPartialBooking) {
-          // For partial bookings, just show success message and don't open payment dialog
           toast.success(
             "Your game session has been created! Others can now join your game.",
           );
-          // Reset form or navigate away if needed
           setSelectedDate("");
           setSelectedStartTime(null);
           setSelectedEndTime(null);
         } else {
-          // For full bookings, open payment dialog
           setIsDialogOpen(true);
           toast.success(
             "Booking created successfully! Please complete your payment.",
@@ -636,7 +626,6 @@ const FutsalDetailsPage = () => {
         },
       });
 
-      // Check for payment URL to determine success for bulk booking
       if (response.paymentUrl) {
         toast.success(
           "Bulk booking created successfully! Redirecting to payment...",
@@ -647,7 +636,6 @@ const FutsalDetailsPage = () => {
           numberOfDays: 1,
         });
 
-        // Redirect to payment URL
         window.location.href = response.paymentUrl;
       } else {
         console.error("Unexpected bulk booking response:", response);
@@ -779,7 +767,6 @@ const FutsalDetailsPage = () => {
           </div>
         </div>
         <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
-          {/* Left Section */}
           <div className="flex-1">
             <div className="mb-4">
               <div className="relative w-full h-[50vh] sm:h-[60vh] md:h-[68vh] mb-2 flex items-center justify-center">
@@ -1157,7 +1144,6 @@ const FutsalDetailsPage = () => {
             </div>
           </div>
 
-          {/* Right Section */}
           <Card className="w-full lg:w-1/3 h-fit p-4 border-none mt-4 lg:mt-0">
             <CardContent className="p-0 space-y-4">
               <Card className="bg-popover p-4 sm:p-6">
@@ -1283,7 +1269,6 @@ const FutsalDetailsPage = () => {
         </div>
       </div>
 
-      {/* Dialog for Booking Confirmation */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[90vw] md:max-w-[425px] z-50">
           <DialogHeader>
@@ -1337,7 +1322,6 @@ const FutsalDetailsPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Map Modal */}
       {showMapModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80">
           <div className="bg-card rounded-lg shadow-lg p-4 sm:p-6 max-w-[90vw] sm:max-w-3xl w-full relative">
@@ -1372,7 +1356,7 @@ const FutsalDetailsPage = () => {
           </div>
         </div>
       )}
-      {/* Share Dialog */}
+
       <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
         <DialogContent className="sm:max-w-[90vw] md:max-w-[425px]">
           <DialogHeader>
@@ -1412,7 +1396,6 @@ const FutsalDetailsPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog
         open={!!reviewToDelete}
         onOpenChange={(open) => !open && setReviewToDelete(null)}
@@ -1452,7 +1435,6 @@ const FutsalDetailsPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Bulk Booking Dialog */}
       <Dialog
         open={showBulkBookingDialog}
         onOpenChange={setShowBulkBookingDialog}

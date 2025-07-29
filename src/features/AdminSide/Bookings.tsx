@@ -279,7 +279,6 @@ const Bookings = () => {
               )}
             </TableBody>
           </Table>
-          {}
           {totalPages > 1 && (
             <div className="flex items-center justify-between px-6 py-4 border-t">
               <div className="text-sm text-muted-foreground">

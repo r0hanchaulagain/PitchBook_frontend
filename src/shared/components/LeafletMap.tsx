@@ -13,12 +13,10 @@ const LeafletMap = React.memo(function LeafletMap({
   width: string | number;
   markerLabel: string;
 }) {
-  // Dynamically require leaflet CSS only when this component is loaded
   React.useEffect(() => {
     import("leaflet/dist/leaflet.css");
   }, []);
 
-  // Dynamically import react-leaflet components
   const [leaflet, setLeaflet] = React.useState<any>(null);
   React.useEffect(() => {
     let mounted = true;
