@@ -7,8 +7,9 @@ import {
   useCallback,
   useMemo,
 } from "react";
-import { apiQuery } from "@lib/apiWrapper";
+import { apiQuery, resetRefreshAttempts } from "@lib/apiWrapper";
 import { socketService } from "@lib/socket";
+import { setAuthStatus } from "@/shared/store/favoritesStore";
 
 export interface User {
   id: string;
@@ -52,6 +53,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (userData: User): Promise<boolean> => {
     try {
       setUserState(userData);
+      // Reset refresh attempts after successful login
+      resetRefreshAttempts();
       // Initialize WebSocket connection after successful login
       const token = localStorage.getItem("token"); // Assuming you store JWT in localStorage
       if (token) {
@@ -74,13 +77,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       // Disconnect WebSocket
       socketService.disconnect();
-      // Call the logout API if you have one
-      await apiQuery("/users/logout");
+      
+      // Call the logout API
+      const response = await apiQuery<{
+        message: string;
+        isOAuthUser: boolean;
+        googleLogoutUrl?: string;
+      }>("users/logout");
+      
+      // Clear local state
+      setUserState(null);
+      resetRefreshAttempts();
+      
+      // Handle OAuth vs regular logout
+      if (response.isOAuthUser && response.googleLogoutUrl) {
+        // OAuth user: redirect to Google logout
+        window.location.href = response.googleLogoutUrl;
+      } else {
+        // Regular user: redirect to login page
+        window.location.href = '/login';
+      }
     } catch (error) {
       console.error("Logout error:", error);
-    } finally {
+      // Fallback: clear state and redirect to login
       setUserState(null);
-      localStorage.removeItem("token");
+      resetRefreshAttempts();
+      window.location.href = '/login';
     }
   };
 
@@ -123,6 +145,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }),
     [userState, isLoading, isRefreshing, login, logout, updateUser],
   );
+
+  // Update favorites store authentication status when user state changes
+  useEffect(() => {
+    setAuthStatus(!!userState);
+  }, [userState]);
 
   // Check authentication status on mount
   useEffect(() => {
