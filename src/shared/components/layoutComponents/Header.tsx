@@ -7,14 +7,17 @@ import {
   BetweenHorizonalEnd,
   Heart,
   Calendar,
+  Shield,
+  Key,
+  Camera,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import Brand_white from "@assets/logos/Brand_white.png";
 import Brand_black from "@assets/logos/Brand_black.png";
-import { useNotifications } from "@/shared/hooks/useNotifications";
 import { useAuth } from "@/contexts/AuthContext";
-import { useState } from "react";
+import { useNotifications } from "@/shared/hooks/useNotifications";
+import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@ui/sheet";
 import {
   DropdownMenu,
@@ -26,6 +29,15 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@ui/avatar";
 import { FavoritesDialog } from "@/features/CustomerSide/Favorites/components/FavoritesDialog";
 import { UserBookingsDialog } from "@/features/CustomerSide/Bookings/UserBookingsDialog";
+import ImageUploader from "@/shared/components/ImageUploader";
+import { apiMutation } from "@/shared/lib/apiWrapper";
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/components/ui/dialog";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -35,6 +47,80 @@ const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
   const [isBookingsOpen, setIsBookingsOpen] = useState(false);
+  const [showImageUploader, setShowImageUploader] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isMfaEnabled, setIsMfaEnabled] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
+
+  // Fetch MFA status when user is authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      setIsMfaEnabled(user.isMfaEnabled || false);
+    } else {
+      setIsMfaEnabled(false);
+    }
+  }, [isAuthenticated, user]);
+
+  const handleForgotPassword = async () => {
+    if (!user?.email) {
+      toast.error("Email not available. Please try logging in again.");
+      return;
+    }
+    setForgotLoading(true);
+    try {
+      await apiMutation({
+        method: "POST",
+        endpoint: "users/forgot-password",
+        body: { email: user.email },
+      });
+      navigate("/auth/forgot-status", {
+        state: {
+          status:
+            "If your email is registered, a password reset link has been sent. Please check your inbox (and spam folder).",
+          image: "/mail-sent.png",
+        },
+        replace: true,
+      });
+    } catch (err: any) {
+      toast.error(err.message || "Failed to send reset link. Try again.");
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
+  const handleProfilePictureUpload = async ({ image }: { image: File }) => {
+    if (!image) return;
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append("image", image);
+
+    try {
+      const endpoint = user?.profileImage
+        ? "users/update-profile-image"
+        : "users/upload-profile-image";
+
+      await apiMutation({
+        method: "POST",
+        endpoint,
+        body: formData,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      // Close the dialog and refresh the page
+      setShowImageUploader(false);
+      window.location.reload();
+
+      toast.success("Profile picture updated successfully");
+    } catch (error) {
+      console.error("Error uploading profile picture:", error);
+      toast.error("Failed to update profile picture");
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   return (
     <div className="flex items-center justify-between bg-black py-4 pt-5 pl-5">
@@ -270,34 +356,80 @@ const Header = () => {
                       </p>
                     </div>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => setIsBookingsOpen(true)}>
-                      <Calendar className="mr-2 h-4 w-4" />
-                      <span>My Bookings</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/profile")}>
-                      <User className="mr-2 h-4 w-4" />
-                      <span>Profile</span>
-                    </DropdownMenuItem>
-                    {user?.role === "admin" && (
-                      <DropdownMenuItem
-                        onClick={() => navigate("/admin/dashboard")}
-                      >
-                        <span>Admin Dashboard</span>
-                      </DropdownMenuItem>
+
+                    {/* User-specific menu items */}
+                    {user?.role === "user" && (
+                      <>
+                        <DropdownMenuItem
+                          onClick={() => setIsBookingsOpen(true)}
+                        >
+                          <Calendar className="mr-2 h-4 w-4" />
+                          <span>My Bookings</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowImageUploader(true);
+                          }}
+                        >
+                          <Camera className="mr-2 h-4 w-4" />
+                          <span>Change Profile Picture</span>
+                        </DropdownMenuItem>
+                        {!user?.authProvider && (
+                          <DropdownMenuItem onClick={handleForgotPassword}>
+                            <Key className="mr-2 h-4 w-4" />
+                            <span>Reset Password</span>
+                          </DropdownMenuItem>
+                        )}
+                        {!isMfaEnabled && !user?.authProvider && (
+                          <DropdownMenuItem
+                            onClick={() => navigate("/enable-mfa")}
+                          >
+                            <Shield className="mr-2 h-4 w-4" />
+                            <span>Enable MFA</span>
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={logout}>
+                          <LogOut className="mr-2 h-4 w-4" />
+                          <span>Log out</span>
+                        </DropdownMenuItem>
+                      </>
                     )}
+
+                    {/* Futsal Owner-specific menu items */}
                     {user?.role === "futsalOwner" && (
-                      <DropdownMenuItem
-                        onClick={() => navigate("/futsal-owner/dashboard")}
-                      >
-                        <BetweenHorizonalEnd />
-                        <span>Futsal Owner Dashboard</span>
-                      </DropdownMenuItem>
+                      <>
+                        <DropdownMenuItem
+                          onClick={() => navigate("/futsal-owner/dashboard")}
+                        >
+                          <BetweenHorizonalEnd className="mr-2 h-4 w-4" />
+                          <span>Futsal Dashboard</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={logout}>
+                          <LogOut className="mr-2 h-4 w-4" />
+                          <span>Log out</span>
+                        </DropdownMenuItem>
+                      </>
                     )}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={logout}>
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Log out</span>
-                    </DropdownMenuItem>
+
+                    {/* Admin-specific menu items */}
+                    {user?.role === "admin" && (
+                      <>
+                        <DropdownMenuItem
+                          onClick={() => navigate("/admin/dashboard")}
+                        >
+                          <span>Admin Dashboard</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={logout}>
+                          <LogOut className="mr-2 h-4 w-4" />
+                          <span>Log out</span>
+                        </DropdownMenuItem>
+                      </>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </li>
@@ -357,60 +489,108 @@ const Header = () => {
 
               {isAuthenticated ? (
                 <div className="pt-4 mt-4 border-t">
-                  <SheetClose asChild>
-                    <button
-                      onClick={() => setIsBookingsOpen(true)}
-                      className="w-full text-left px-4 py-2 text-lg hover:bg-accent/50 rounded-md transition-colors"
-                    >
-                      My Bookings
-                    </button>
-                  </SheetClose>
+                  {/* User-specific mobile menu items */}
                   {user?.role === "user" && (
-                    <SheetClose asChild>
-                      <button
-                        onClick={() => setIsFavoritesOpen(true)}
-                        className="w-full text-left px-4 py-2 text-lg hover:bg-accent/50 rounded-md transition-colors"
-                      >
-                        Favorites
-                      </button>
-                    </SheetClose>
+                    <>
+                      <SheetClose asChild>
+                        <button
+                          onClick={() => setIsBookingsOpen(true)}
+                          className="w-full text-left px-4 py-2 text-lg hover:bg-accent/50 rounded-md transition-colors"
+                        >
+                          My Bookings
+                        </button>
+                      </SheetClose>
+                      <SheetClose asChild>
+                        <button
+                          onClick={() => setIsFavoritesOpen(true)}
+                          className="w-full text-left px-4 py-2 text-lg hover:bg-accent/50 rounded-md transition-colors"
+                        >
+                          Favorites
+                        </button>
+                      </SheetClose>
+                      <SheetClose asChild>
+                        <button
+                          onClick={() => setShowImageUploader(true)}
+                          className="w-full text-left px-4 py-2 text-lg hover:bg-accent/50 rounded-md transition-colors"
+                        >
+                          Change Profile Picture
+                        </button>
+                      </SheetClose>
+                      {!user?.authProvider && (
+                        <SheetClose asChild>
+                          <button
+                            onClick={handleForgotPassword}
+                            disabled={forgotLoading}
+                            className="w-full text-left px-4 py-2 text-lg hover:bg-accent/50 rounded-md transition-colors"
+                          >
+                            {forgotLoading ? "Sending..." : "Reset Password"}
+                          </button>
+                        </SheetClose>
+                      )}
+                      {!isMfaEnabled && !user?.authProvider && (
+                        <SheetClose asChild>
+                          <Link
+                            to="/enable-mfa"
+                            className="block px-4 py-2 text-lg hover:bg-accent/50 rounded-md transition-colors"
+                          >
+                            Enable MFA
+                          </Link>
+                        </SheetClose>
+                      )}
+                      <SheetClose asChild>
+                        <button
+                          onClick={logout}
+                          className="w-full text-left px-4 py-2 text-lg text-destructive hover:bg-destructive/10 rounded-md transition-colors mt-4"
+                        >
+                          Logout
+                        </button>
+                      </SheetClose>
+                    </>
                   )}
-                  <SheetClose asChild>
-                    <Link
-                      to="/profile"
-                      className="block px-4 py-2 text-lg hover:bg-accent/50 rounded-md transition-colors"
-                    >
-                      Profile
-                    </Link>
-                  </SheetClose>
-                  {user?.role === "admin" && (
-                    <SheetClose asChild>
-                      <Link
-                        to="/admin/dashboard"
-                        className="block px-4 py-2 text-lg hover:bg-accent/50 rounded-md transition-colors"
-                      >
-                        Admin Dashboard
-                      </Link>
-                    </SheetClose>
-                  )}
+
+                  {/* Futsal Owner-specific mobile menu items */}
                   {user?.role === "futsalOwner" && (
-                    <SheetClose asChild>
-                      <Link
-                        to="/futsal-owner/dashboard"
-                        className="block px-4 py-2 text-lg hover:bg-accent/50 rounded-md transition-colors"
-                      >
-                        Futsal Owner Dashboard
-                      </Link>
-                    </SheetClose>
+                    <>
+                      <SheetClose asChild>
+                        <Link
+                          to="/futsal-owner/dashboard"
+                          className="block px-4 py-2 text-lg hover:bg-accent/50 rounded-md transition-colors"
+                        >
+                          Futsal Dashboard
+                        </Link>
+                      </SheetClose>
+                      <SheetClose asChild>
+                        <button
+                          onClick={logout}
+                          className="w-full text-left px-4 py-2 text-lg text-destructive hover:bg-destructive/10 rounded-md transition-colors mt-4"
+                        >
+                          Logout
+                        </button>
+                      </SheetClose>
+                    </>
                   )}
-                  <SheetClose asChild>
-                    <button
-                      onClick={logout}
-                      className="w-full text-left px-4 py-2 text-lg text-destructive hover:bg-destructive/10 rounded-md transition-colors mt-4"
-                    >
-                      Logout
-                    </button>
-                  </SheetClose>
+
+                  {/* Admin-specific mobile menu items */}
+                  {user?.role === "admin" && (
+                    <>
+                      <SheetClose asChild>
+                        <Link
+                          to="/admin/dashboard"
+                          className="block px-4 py-2 text-lg hover:bg-accent/50 rounded-md transition-colors"
+                        >
+                          Admin Dashboard
+                        </Link>
+                      </SheetClose>
+                      <SheetClose asChild>
+                        <button
+                          onClick={logout}
+                          className="w-full text-left px-4 py-2 text-lg text-destructive hover:bg-destructive/10 rounded-md transition-colors mt-4"
+                        >
+                          Logout
+                        </button>
+                      </SheetClose>
+                    </>
+                  )}
                 </div>
               ) : (
                 <div className="pt-4 mt-4 border-t space-y-2">
@@ -447,6 +627,24 @@ const Header = () => {
         open={isBookingsOpen}
         onOpenChange={setIsBookingsOpen}
       />
+
+      {/* Image Uploader Dialog */}
+      <Dialog open={showImageUploader} onOpenChange={setShowImageUploader}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Update Profile Picture</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <ImageUploader
+              uploadFn={handleProfilePictureUpload}
+              imageURL={user?.profileImage}
+              fallbackText="Drag and drop your image here, or click to select"
+              buttonText={isUploading ? "Uploading..." : "Save Changes"}
+              isUploading={isUploading}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

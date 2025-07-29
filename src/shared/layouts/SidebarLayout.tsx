@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Menu,
   X,
@@ -9,6 +9,9 @@ import {
   Settings,
   LogOut,
   Image as ImageIcon,
+  Home,
+  Key,
+  Shield,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ModeToggle } from "@ui/theme-toggle";
@@ -40,7 +43,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/shared/components/ui/alert-dialog";
-import { Outlet, NavLink, useLocation } from "react-router-dom";
+import { Outlet, NavLink, useLocation, useNavigate } from "react-router-dom";
 
 export type SidebarItem = {
   icon: React.ElementType;
@@ -66,9 +69,48 @@ export default function DashboardLayout({
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [showImageUploader, setShowImageUploader] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isMfaEnabled, setIsMfaEnabled] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
   const isMobile = useIsMobile();
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
+
+  // Fetch MFA status when user is authenticated
+  useEffect(() => {
+    if (user) {
+      setIsMfaEnabled(user.isMfaEnabled || false);
+    } else {
+      setIsMfaEnabled(false);
+    }
+  }, [user]);
+
+  const handleForgotPassword = async () => {
+    if (!user?.email) {
+      toast.error("Email not available. Please try logging in again.");
+      return;
+    }
+    setForgotLoading(true);
+    try {
+      await apiMutation({
+        method: "POST",
+        endpoint: "users/forgot-password",
+        body: { email: user.email },
+      });
+      navigate("/auth/forgot-status", {
+        state: {
+          status:
+            "If your email is registered, a password reset link has been sent. Please check your inbox (and spam folder).",
+          image: "/mail-sent.png",
+        },
+        replace: true,
+      });
+    } catch (err: any) {
+      toast.error(err.message || "Failed to send reset link. Try again.");
+    } finally {
+      setForgotLoading(false);
+    }
+  };
 
   const handleProfilePictureUpload = async ({ image }: { image: File }) => {
     if (!image) return;
@@ -407,6 +449,37 @@ export default function DashboardLayout({
                       Account
                     </div>
                     <DropdownMenuSeparator />
+
+                    {/* Futsal Owner-specific menu items */}
+                    {user?.role === "futsalOwner" && (
+                      <>
+                        <DropdownMenuItem onClick={() => navigate("/")}>
+                          <Home className="mr-2 h-4 w-4" />
+                          <span>Return to Homepage</span>
+                        </DropdownMenuItem>
+                        {!user?.authProvider && (
+                          <DropdownMenuItem
+                            onClick={handleForgotPassword}
+                            disabled={forgotLoading}
+                          >
+                            <Key className="mr-2 h-4 w-4" />
+                            <span>
+                              {forgotLoading ? "Sending..." : "Reset Password"}
+                            </span>
+                          </DropdownMenuItem>
+                        )}
+                        {!isMfaEnabled && !user?.authProvider && (
+                          <DropdownMenuItem
+                            onClick={() => navigate("/enable-mfa")}
+                          >
+                            <Shield className="mr-2 h-4 w-4" />
+                            <span>Enable MFA</span>
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuSeparator />
+                      </>
+                    )}
+
                     <DropdownMenuItem
                       className="cursor-pointer"
                       onClick={(e) => {
