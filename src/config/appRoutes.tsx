@@ -23,6 +23,7 @@ const Register = lazy(() => import("@features/Auth/Register"));
 const ForgotStatus = lazy(() => import("@features/Auth/ForgotStatus"));
 const ResetPassword = lazy(() => import("@features/Auth/ResetPassword"));
 const OAuthCallback = lazy(() => import("@features/Auth/OAuthCallback"));
+const EnableMFAPage = lazy(() => import("@features/Auth/EnableMFAPage"));
 
 // const AdminPage = lazy(() => import("@/pages/AdminPage"));
 // const UserPage = lazy(() => import("@/pages/UserPage"));
@@ -78,6 +79,7 @@ export default function AppRoutes() {
     { path: "/auth/forgot-status", element: <ForgotStatus /> },
     { path: "/reset-password", element: <ResetPassword /> },
     { path: "/auth/oauth/callback", element: <OAuthCallback /> },
+    { path: "/enable-mfa", element: <EnableMFAPage /> },
 
     // Main layout with general authenticated routes
     {
@@ -89,7 +91,7 @@ export default function AppRoutes() {
         { path: "/futsals/:id", element: <FutsalDetailsPage /> },
         { path: "/games", element: <GamesPage /> },
         { path: "/contact", element: <ContactUsPage /> },
-        { path: "/bookings/verify", element: <PaymentVerificationPage /> }, 
+        { path: "/bookings/verify", element: <PaymentVerificationPage /> },
       ],
     },
 
