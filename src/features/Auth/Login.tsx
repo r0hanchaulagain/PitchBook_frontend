@@ -11,6 +11,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth, type User } from "@/contexts/AuthContext";
+import { GoogleOAuthButton } from "@/shared/components/ui/GoogleOAuthButton";
+
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
   password: z.string(), // No validation for password
@@ -127,6 +129,23 @@ export default function Login() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
+                {/* Google OAuth Button */}
+                <div className="mb-6">
+                  <GoogleOAuthButton />
+                </div>
+
+                {/* Divider */}
+                <div className="relative mb-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      Or continue with
+                    </span>
+                  </div>
+                </div>
+
                 <form
                   onSubmit={handleSubmit(handleLogin)}
                   className="space-y-5"

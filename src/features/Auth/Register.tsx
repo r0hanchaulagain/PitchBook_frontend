@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { apiMutation } from "@lib/apiWrapper";
@@ -17,7 +17,8 @@ import {
   DropdownMenuContent,
   DropdownMenuCheckboxItem,
 } from "@ui/dropdown-menu";
-import Altcha from "@/shared/components/ui/Altcha";
+import { GoogleOAuthButton } from "@/shared/components/ui/GoogleOAuthButton";
+import { CaptchaDialog } from "@/shared/components/ui/CaptchaDialog";
 
 const passwordCriteria = [
   { label: "At least 10 characters", test: (pw: string) => pw.length >= 10 },
@@ -53,10 +54,10 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(true);
   const [submitted, setSubmitted] = useState(false);
   const [role, setRole] = useState<"user" | "futsalOwner">("user");
-  const [altchaCompleted, setAltchaCompleted] = useState(false);
+  const [captchaDialogOpen, setCaptchaDialogOpen] = useState(false);
+  const [formData, setFormData] = useState<RegisterForm | null>(null);
   const navigate = useNavigate();
-  const altchaRef = useRef<{ value: string | null }>(null);
-
+  
   const {
     register,
     handleSubmit,
@@ -100,21 +101,6 @@ export default function Register() {
   function onSubmit(data: RegisterForm) {
     setSubmitted(true);
 
-    // Check if ALTCHA is completed
-    const altchaValue = altchaRef.current?.value;
-    if (!altchaValue) {
-      toast.error("Please complete the CAPTCHA verification", {
-        style: {
-          background: "#fff0f1",
-          color: "#d32f2f",
-          border: "1px solid #f8bbbc",
-        },
-        icon: <EyeOff color="#d32f2f" size={20} />,
-        position: "bottom-right",
-      });
-      return;
-    }
-
     // Password validation feedback toast (manual, not zod)
     const password = data.password;
     const failed = passwordCriteria.filter((c) => !c.test(password));
@@ -141,14 +127,23 @@ export default function Register() {
       return;
     }
 
+    // Store form data and open captcha dialog
+    setFormData(data);
+    setCaptchaDialogOpen(true);
+  }
+
+  function handleCaptchaComplete(altchaValue: string) {
+    if (!formData) return;
+
     // Include ALTCHA token in the registration data
     const registrationData = {
-      ...data,
+      ...formData,
       role,
       altcha: altchaValue,
     };
 
     registerMutation.mutate(registrationData);
+    setCaptchaDialogOpen(false);
   }
 
   function handleRoleChange(newRole: "user" | "futsalOwner") {
@@ -156,13 +151,7 @@ export default function Register() {
     setValue("role", newRole, { shouldDirty: true });
   }
 
-  const handleAltchaStateChange = (ev: Event | CustomEvent) => {
-    if ("detail" in ev && ev.detail.payload) {
-      setAltchaCompleted(true);
-    } else {
-      setAltchaCompleted(false);
-    }
-  };
+
 
   return (
     <>
@@ -176,6 +165,23 @@ export default function Register() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
+                {/* Google OAuth Button */}
+                <div className="mb-6">
+                  <GoogleOAuthButton />
+                </div>
+
+                {/* Divider */}
+                <div className="relative mb-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      Or continue with
+                    </span>
+                  </div>
+                </div>
+
                 <form
                   onSubmit={handleSubmit(onSubmit)}
                   className="space-y-5"
@@ -224,10 +230,10 @@ export default function Register() {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Phone</Label>
+                    <Label htmlFor="phone">Phone Number</Label>
                     <Input
                       id="phone"
-                      type="text"
+                      type="tel"
                       placeholder="98XXXXXXXX"
                       aria-invalid={!!errors.phone}
                       className={
@@ -251,10 +257,10 @@ export default function Register() {
                         id="password"
                         type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
-                        aria-invalid={!!errors.password}
+                        aria-invalid={!!errors?.password}
                         className={
                           "pr-10 transition-all duration-200 focus:scale-[1.03]" +
-                          (submitted && errors.password
+                          (submitted && errors?.password
                             ? " border-destructive ring-destructive/30 bg-red-50 ring-2"
                             : "")
                         }
@@ -317,29 +323,13 @@ export default function Register() {
                       </div>
                     )}
                   </div>
-
-                  {/* ALTCHA CAPTCHA */}
-                  <div className="space-y-2">
-                    <Label>CAPTCHA Verification</Label>
-                    <div className="border rounded-md p-3 bg-muted/20">
-                      <Altcha
-                        ref={altchaRef}
-                        onStateChange={handleAltchaStateChange}
-                      />
-                    </div>
-                    {submitted && !altchaCompleted && (
-                      <div className="text-destructive animate-fade-in text-xs">
-                        Please complete the CAPTCHA verification
-                      </div>
-                    )}
-                  </div>
-
+                  
                   <Button
                     type="submit"
                     className="w-full transition-all duration-150 hover:scale-[1.02]"
                     disabled={registerMutation.isPending}
                   >
-                    {registerMutation.isPending ? "Registering..." : "Register"}
+                    {registerMutation.isPending ? "Registering..." : "Continue to Verification"}
                   </Button>
                   <div className="pt-2 text-center">
                     <a
@@ -364,6 +354,13 @@ export default function Register() {
           </div>
         </div>
       </div>
+      
+      <CaptchaDialog
+        open={captchaDialogOpen}
+        onOpenChange={setCaptchaDialogOpen}
+        onCaptchaComplete={handleCaptchaComplete}
+        isPending={registerMutation.isPending}
+      />
     </>
   );
 }

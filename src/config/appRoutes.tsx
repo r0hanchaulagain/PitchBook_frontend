@@ -22,6 +22,7 @@ const Login = lazy(() => import("@features/Auth/Login"));
 const Register = lazy(() => import("@features/Auth/Register"));
 const ForgotStatus = lazy(() => import("@features/Auth/ForgotStatus"));
 const ResetPassword = lazy(() => import("@features/Auth/ResetPassword"));
+const OAuthCallback = lazy(() => import("@features/Auth/OAuthCallback"));
 
 // const AdminPage = lazy(() => import("@/pages/AdminPage"));
 // const UserPage = lazy(() => import("@/pages/UserPage"));
@@ -76,6 +77,7 @@ export default function AppRoutes() {
     { path: "/register", element: <Register /> },
     { path: "/auth/forgot-status", element: <ForgotStatus /> },
     { path: "/reset-password", element: <ResetPassword /> },
+    { path: "/auth/oauth/callback", element: <OAuthCallback /> },
 
     // Main layout with general authenticated routes
     {
@@ -87,17 +89,7 @@ export default function AppRoutes() {
         { path: "/futsals/:id", element: <FutsalDetailsPage /> },
         { path: "/games", element: <GamesPage /> },
         { path: "/contact", element: <ContactUsPage /> },
-        { path: "/bookings/verify", element: <PaymentVerificationPage /> },
-        // {
-        // 	element: <RequireAuth />,
-        // 	children: [
-        // 		{ path: "/bookings", element: <BookingsList /> },
-        // 		{ path: "/bookings/create", element: <CreateBooking /> },
-        // 		{ path: "/futsals", element: <FutsalList /> },
-        // 		{ path: "/notifications", element: <NotificationsList /> },
-        // 		{ path: "/user", element: <UserPage /> },
-        // 	],
-        // },
+        { path: "/bookings/verify", element: <PaymentVerificationPage /> }, 
       ],
     },
 
