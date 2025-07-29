@@ -57,7 +57,7 @@ export default function Register() {
   const [captchaDialogOpen, setCaptchaDialogOpen] = useState(false);
   const [formData, setFormData] = useState<RegisterForm | null>(null);
   const navigate = useNavigate();
-  
+
   const {
     register,
     handleSubmit,
@@ -150,8 +150,6 @@ export default function Register() {
     setRole(newRole);
     setValue("role", newRole, { shouldDirty: true });
   }
-
-
 
   return (
     <>
@@ -323,13 +321,15 @@ export default function Register() {
                       </div>
                     )}
                   </div>
-                  
+
                   <Button
                     type="submit"
                     className="w-full transition-all duration-150 hover:scale-[1.02]"
                     disabled={registerMutation.isPending}
                   >
-                    {registerMutation.isPending ? "Registering..." : "Continue to Verification"}
+                    {registerMutation.isPending
+                      ? "Registering..."
+                      : "Continue to Verification"}
                   </Button>
                   <div className="pt-2 text-center">
                     <a
@@ -354,7 +354,7 @@ export default function Register() {
           </div>
         </div>
       </div>
-      
+
       <CaptchaDialog
         open={captchaDialogOpen}
         onOpenChange={setCaptchaDialogOpen}

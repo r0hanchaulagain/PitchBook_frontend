@@ -12,6 +12,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth, type User } from "@/contexts/AuthContext";
 import { GoogleOAuthButton } from "@/shared/components/ui/GoogleOAuthButton";
+import MFAVerification from "./MFAVerification";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -22,6 +23,8 @@ type LoginForm = z.infer<typeof loginSchema>;
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
+  const [showMFAVerification, setShowMFAVerification] = useState(false);
+  const [loginEmail, setLoginEmail] = useState("");
   const navigate = useNavigate();
   const {
     register,
@@ -43,11 +46,23 @@ export default function Login() {
   const handleLogin = async (data: LoginForm) => {
     try {
       setIsLoading(true);
-      const response = await apiMutation<{ user: User; token: string }>({
+      setLoginEmail(data.email);
+
+      const response = await apiMutation<{
+        user: User;
+        token: string;
+        requiresMFA?: boolean;
+      }>({
         method: "POST",
         endpoint: "users/login",
         body: data,
       });
+
+      // Check if MFA is required
+      if (response.requiresMFA) {
+        setShowMFAVerification(true);
+        return;
+      }
 
       // Use AuthContext to set the user state
       const success = await login(response.user);
@@ -87,6 +102,31 @@ export default function Login() {
     }
   };
 
+  const handleMFAVerificationSuccess = async (user: User) => {
+    try {
+      // Use the user data from MFA verification response
+      const success = await login(user);
+      if (success) {
+        toast.success("Login successful! Redirecting...");
+        setTimeout(() => {
+          // Role-based navigation
+          if (user.role === "admin") {
+            navigate("/admin/dashboard", { replace: true });
+          } else if (user.role === "futsalOwner") {
+            navigate("/futsal-owner/dashboard", { replace: true });
+          } else if (user.role === "user") {
+            navigate("/dashboard", { replace: true });
+          } else {
+            navigate("/", { replace: true });
+          }
+        }, 100);
+      }
+    } catch (error) {
+      console.error("Error completing login after MFA:", error);
+      toast.error("Failed to complete login. Please try again.");
+    }
+  };
+
   async function handleForgotPassword(e: React.MouseEvent) {
     e.preventDefault();
     if (!getValues || !getValues("email")) {
@@ -115,6 +155,17 @@ export default function Login() {
     } finally {
       setForgotLoading(false);
     }
+  }
+
+  // Show MFA verification if required
+  if (showMFAVerification) {
+    return (
+      <MFAVerification
+        onVerificationSuccess={handleMFAVerificationSuccess}
+        onBack={() => setShowMFAVerification(false)}
+        email={loginEmail}
+      />
+    );
   }
 
   return (
