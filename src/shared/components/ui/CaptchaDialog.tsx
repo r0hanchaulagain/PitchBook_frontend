@@ -29,7 +29,7 @@ export function CaptchaDialog({
   const altchaRef = useRef<{ value: string | null }>(null);
 
   const handleAltchaStateChange = (ev: Event | CustomEvent) => {
-    if ('detail' in ev && ev.detail.payload) {
+    if ("detail" in ev && ev.detail.payload) {
       setAltchaCompleted(true);
     } else {
       setAltchaCompleted(false);
@@ -60,17 +60,15 @@ export function CaptchaDialog({
         <DialogHeader>
           <DialogTitle>Complete CAPTCHA Verification</DialogTitle>
           <DialogDescription>
-            Please complete the CAPTCHA verification to continue with your registration.
+            Please complete the CAPTCHA verification to continue with your
+            registration.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
             <Label>CAPTCHA Verification</Label>
             <div className="border rounded-md p-3 bg-muted/20">
-              <Altcha
-                ref={altchaRef}
-                onStateChange={handleAltchaStateChange}
-              />
+              <Altcha ref={altchaRef} onStateChange={handleAltchaStateChange} />
             </div>
           </div>
           <div className="flex justify-end space-x-2">
@@ -92,4 +90,4 @@ export function CaptchaDialog({
       </DialogContent>
     </Dialog>
   );
-} 
+}
