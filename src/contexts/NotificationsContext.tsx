@@ -8,6 +8,7 @@ import {
 } from "react";
 import { socketService } from "@lib/socket";
 import { apiQuery, apiMutation } from "@lib/apiWrapper";
+import { useAuth } from "./AuthContext";
 
 export interface Notification {
   _id: string;
@@ -48,8 +49,9 @@ export const NotificationsProvider = ({
 }: {
   children: ReactNode;
 }) => {
+  const { isAuthenticated } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
@@ -85,7 +87,7 @@ export const NotificationsProvider = ({
   }, []);
 
   const markAsRead = useCallback(async (notificationIds: string[]) => {
-    if (!notificationIds.length) return;
+    if (!notificationIds.length || !isAuthenticated) return;
 
     try {
       // Optimistic update
@@ -118,9 +120,11 @@ export const NotificationsProvider = ({
           : new Error("Failed to mark notification as read"),
       );
     }
-  }, []);
+  }, [isAuthenticated]);
 
   const markAllAsRead = useCallback(async () => {
+    if (!isAuthenticated) return;
+    
     try {
       const unreadIds = notifications
         .filter((n) => !n.isRead)
@@ -137,10 +141,17 @@ export const NotificationsProvider = ({
           : new Error("Failed to mark all notifications as read"),
       );
     }
-  }, [markAsRead, notifications]);
+  }, [markAsRead, notifications, isAuthenticated]);
 
   // Setup socket listeners and fetch initial data when component mounts
   useEffect(() => {
+    // Only fetch notifications and setup socket if user is authenticated
+    if (!isAuthenticated) {
+      setNotifications([]);
+      setError(null);
+      return;
+    }
+
     // Fetch initial notifications
     fetchInitialNotifications();
 
@@ -175,7 +186,7 @@ export const NotificationsProvider = ({
       socketService.off("notification:read", handleNotificationRead);
       socketService.off("notification:read:error", handleNotificationReadError);
     };
-  }, [fetchInitialNotifications]);
+  }, [fetchInitialNotifications, isAuthenticated]);
 
   return (
     <NotificationsContext.Provider

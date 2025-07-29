@@ -173,10 +173,16 @@ export default function FutsalSelectionPage() {
       .filter(
         ([, v]) => v !== undefined && v !== null && v !== "" && v !== "NaN",
       )
-      .map(
-        ([k, v]) =>
-          `${encodeURIComponent(k)}=${encodeURIComponent(v as string)}`,
-      )
+      .map(([k, v]) => {
+        // Handle different types of values
+        let value: string;
+        if (typeof v === "object" && v !== null) {
+          value = JSON.stringify(v);
+        } else {
+          value = String(v);
+        }
+        return `${encodeURIComponent(k)}=${encodeURIComponent(value)}`;
+      })
       .join("&");
     try {
       const response = await apiQuery<any>(`futsals?${query}`);

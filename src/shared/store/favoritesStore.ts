@@ -1,6 +1,14 @@
 import { create } from "zustand";
 import { favoritesApi } from "@/features/CustomerSide/Favorites/favoritesApi";
 
+// Global flag to track authentication status
+let isAuthenticated = false;
+
+// Function to update authentication status
+export const setAuthStatus = (status: boolean) => {
+  isAuthenticated = status;
+};
+
 interface Futsal {
   _id: string;
   name: string;
@@ -44,6 +52,13 @@ export const useFavoritesStore = create<FavoritesState>((set, get) => ({
   fetchFavorites: async () => {
     set({ isLoading: true, error: null });
     try {
+      // Check if user is authenticated
+      if (!isAuthenticated) {
+        // If not authenticated, set empty favorites and return
+        set({ favorites: [], isLoading: false });
+        return;
+      }
+      
       const response = (await favoritesApi.getFavoriteFutsals()) as {
         favorites: Futsal[];
       };
@@ -95,7 +110,7 @@ export const useFavoritesStore = create<FavoritesState>((set, get) => ({
         setUser({
           ...user,
           favoritesFutsal: (user.favoritesFutsal || []).filter(
-            (id) => id !== futsalId,
+            (id: string) => id !== futsalId,
           ),
         });
       }
@@ -116,7 +131,10 @@ export const useFavoritesStore = create<FavoritesState>((set, get) => ({
 }));
 
 const initializeFavorites = () => {
-  useFavoritesStore.getState().fetchFavorites();
+  // Only initialize if user is authenticated
+  if (isAuthenticated) {
+    useFavoritesStore.getState().fetchFavorites();
+  }
 };
 
 let unsubscribe: (() => void) | null = null;
@@ -124,7 +142,13 @@ let unsubscribe: (() => void) | null = null;
 if (typeof window !== "undefined") {
   setTimeout(() => {
     initializeFavorites();
-    const authCheckInterval = setInterval(() => {}, 3000);
+    const authCheckInterval = setInterval(() => {
+      // Check authentication status periodically
+      if (!isAuthenticated) {
+        // Clear favorites if user is not authenticated
+        useFavoritesStore.getState().favorites = [];
+      }
+    }, 3000);
 
     window.addEventListener("beforeunload", () => {
       clearInterval(authCheckInterval);

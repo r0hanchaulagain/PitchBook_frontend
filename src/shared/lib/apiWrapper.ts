@@ -20,6 +20,12 @@ let csrfToken: string | null = null;
 let tokenExpiry: number | null = null;
 const TOKEN_LIFETIME = 24 * 60 * 60 * 1000;
 
+// Refresh token attempt tracking
+let refreshAttempts = 0;
+let lastRefreshAttempt = 0;
+const MAX_REFRESH_ATTEMPTS = 2;
+const REFRESH_COOLDOWN = 5000; // 5 seconds cooldown between refresh attempts
+
 // Helper to fetch CSRF token
 async function fetchCsrfToken(): Promise<string> {
   try {
@@ -54,14 +60,46 @@ async function getValidCsrfToken(): Promise<string> {
 
 // Helper to refresh access token
 async function refreshAccessToken() {
+  const now = Date.now();
+  
+  // Check if we've exceeded max attempts
+  if (refreshAttempts >= MAX_REFRESH_ATTEMPTS) {
+    console.debug("[refreshAccessToken] Max refresh attempts reached, skipping...");
+    throw new Error("Max refresh attempts reached");
+  }
+  
+  // Check cooldown period
+  if (now - lastRefreshAttempt < REFRESH_COOLDOWN) {
+    console.debug("[refreshAccessToken] Refresh cooldown active, skipping...");
+    throw new Error("Refresh cooldown active");
+  }
+  
   try {
     console.debug("[refreshAccessToken] Attempting refresh...");
-    await apiMutation({ method: "POST", endpoint: "users/refresh-token" });
+    refreshAttempts++;
+    lastRefreshAttempt = now;
+    
+    // Use internalApiMutation to avoid infinite recursion
+    const csrfToken = await getValidCsrfToken();
+    await internalApiMutation({ 
+      method: "POST", 
+      endpoint: "users/refresh-token",
+      headers: { "X-CSRF-Token": csrfToken }
+    });
+    
     console.debug("[refreshAccessToken] Refresh succeeded.");
+    // Reset attempts on success
+    refreshAttempts = 0;
   } catch (err) {
     console.error("[refreshAccessToken] Refresh failed:", err);
     throw new Error("Session expired. Please log in again.");
   }
+}
+
+// Function to reset refresh attempts (call this after successful login)
+export function resetRefreshAttempts() {
+  refreshAttempts = 0;
+  lastRefreshAttempt = 0;
 }
 
 // DRY helper for GET API calls with cookies
