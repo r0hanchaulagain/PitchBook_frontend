@@ -12,8 +12,6 @@ import {
 import { Badge } from "@ui/badge";
 import { Search, Calendar, Eye } from "lucide-react";
 import { useState } from "react";
-
-// Types
 interface Booking {
   id: number;
   futsalName: string;
@@ -27,8 +25,6 @@ interface Booking {
   paymentStatus: "paid" | "pending" | "refunded" | "failed";
   bookingDate: string;
 }
-
-// Mock data - Will be replaced with API calls
 const mockBookings: Booking[] = [
   {
     id: 1,
@@ -96,28 +92,24 @@ const mockBookings: Booking[] = [
     bookingDate: "2023-06-19T09:10:00Z",
   },
 ];
-
 const statusVariantMap = {
   confirmed: "default",
   completed: "secondary",
   cancelled: "destructive",
   pending: "outline",
 } as const;
-
 const paymentStatusVariantMap = {
   paid: "default",
   pending: "outline",
   refunded: "secondary",
   failed: "destructive",
 } as const;
-
 const Bookings = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-
   const filteredBookings = mockBookings.filter((booking) => {
     const matchesSearch =
       booking.futsalName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -125,17 +117,13 @@ const Bookings = () => {
     const matchesStatus =
       selectedStatus === "all" || booking.status === selectedStatus;
     const matchesDate = !selectedDate || booking.date === selectedDate;
-
     return matchesSearch && matchesStatus && matchesDate;
   });
-
-  // Pagination
   const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
   const currentItems = filteredBookings.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   );
-
   const formatDate = (dateString: string) => {
     const options: Intl.DateTimeFormatOptions = {
       year: "numeric",
@@ -144,7 +132,6 @@ const Bookings = () => {
     };
     return new Date(dateString).toLocaleDateString("en-US", options);
   };
-
   const formatTime = (timeString: string) => {
     const [hours, minutes] = timeString.split(":");
     const hour = parseInt(hours, 10);
@@ -152,7 +139,6 @@ const Bookings = () => {
     const displayHour = hour % 12 || 12;
     return `${displayHour}:${minutes} ${period}`;
   };
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -167,7 +153,6 @@ const Bookings = () => {
           <Button>Export Report</Button>
         </div>
       </div>
-
       <Card>
         <CardHeader className="pb-0">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -294,8 +279,7 @@ const Bookings = () => {
               )}
             </TableBody>
           </Table>
-
-          {/* Pagination */}
+          {}
           {totalPages > 1 && (
             <div className="flex items-center justify-between px-6 py-4 border-t">
               <div className="text-sm text-muted-foreground">
@@ -341,5 +325,4 @@ const Bookings = () => {
     </div>
   );
 };
-
 export default Bookings;

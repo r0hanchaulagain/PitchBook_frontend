@@ -1,4 +1,3 @@
-// Shared mock data and helpers for FutsalOwnerDashboard pages
 export const mockOwnerData = {
   futsal: {
     id: 1,
@@ -152,7 +151,6 @@ export const mockOwnerData = {
     })),
   },
 };
-
 export function formatCurrency(amount: number) {
   return new Intl.NumberFormat("en-NP", {
     style: "currency",

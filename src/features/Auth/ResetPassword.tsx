@@ -8,7 +8,6 @@ import { toast } from "sonner";
 import { Eye, EyeOff, CheckCircle2, XCircle } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiMutation } from "@lib/apiWrapper";
-
 const passwordCriteria = [
   { label: "At least 10 characters", test: (pw: string) => pw.length >= 10 },
   {
@@ -25,12 +24,10 @@ const passwordCriteria = [
     test: (pw: string) => /[^A-Za-z0-9]/.test(pw),
   },
 ];
-
 function useQueryParams() {
   const { search } = useLocation();
   return Object.fromEntries(new URLSearchParams(search));
 }
-
 export default function ResetPassword() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -39,7 +36,6 @@ export default function ResetPassword() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const { token, email } = useQueryParams();
-
   const mutation = useMutation({
     mutationFn: async (body: {
       token: string;
@@ -59,10 +55,8 @@ export default function ResetPassword() {
       toast.error(err.message || "Failed to reset password.");
     },
   });
-
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    // Validate criteria
     const failed = passwordCriteria.filter((c) => !c.test(password));
     if (failed.length > 0) {
       toast.error(
@@ -88,8 +82,6 @@ export default function ResetPassword() {
     setSubmitting(true);
     mutation.mutate({ token, email, password });
   }
-
-  // Only allow if both token and email are present
   if (!token || !email) {
     return (
       <div className="bg-background flex min-h-screen items-center justify-center">
@@ -111,9 +103,7 @@ export default function ResetPassword() {
       </div>
     );
   }
-
   const meterFulfilled = passwordCriteria.every((c) => c.test(password));
-
   return (
     <div className="bg-background flex min-h-screen items-center justify-center">
       <Card className="bg-background animate-fade-in-up mx-auto w-full max-w-md shadow-lg">

@@ -12,8 +12,6 @@ import {
   Download,
   Settings,
 } from "lucide-react";
-
-// Types
 interface StatCardProps {
   title: string;
   value: string | number;
@@ -22,8 +20,6 @@ interface StatCardProps {
   trendValue?: string;
   subtitle?: string;
 }
-
-// Mock data - Will be replaced with API calls
 const mockAdminData = {
   overview: {
     totalUsers: 2845,
@@ -51,7 +47,6 @@ const mockAdminData = {
     growth: 15.2,
   },
 };
-
 const StatCard = ({
   title,
   value,
@@ -93,7 +88,6 @@ const StatCard = ({
     </CardContent>
   </Card>
 );
-
 const AdminDashboard = () => {
   return (
     <div className="space-y-6">
@@ -110,8 +104,7 @@ const AdminDashboard = () => {
           </Button>
         </div>
       </div>
-
-      {/* Stats Grid */}
+      {}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Users"
@@ -142,8 +135,7 @@ const AdminDashboard = () => {
           trendValue={`+${mockAdminData.revenueStats.growth}% from last month`}
         />
       </div>
-
-      {/* Quick Actions */}
+      {}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Button
           variant="outline"
@@ -174,8 +166,7 @@ const AdminDashboard = () => {
           Settings
         </Button>
       </div>
-
-      {/* Recent Activity */}
+      {}
       <Card>
         <CardHeader>
           <CardTitle>Recent Activity</CardTitle>
@@ -207,5 +198,4 @@ const AdminDashboard = () => {
     </div>
   );
 };
-
 export default AdminDashboard;

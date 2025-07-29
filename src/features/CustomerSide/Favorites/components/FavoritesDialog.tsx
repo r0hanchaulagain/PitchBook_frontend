@@ -4,7 +4,6 @@ import { useFavoritesStore } from "@/shared/store/favoritesStore";
 import { Button } from "@ui/button";
 import { Heart, MapPin } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-
 function mapFutsalToCard(futsal: any) {
   return {
     _id: futsal._id,
@@ -22,7 +21,6 @@ function mapFutsalToCard(futsal: any) {
     },
   };
 }
-
 export const FavoritesDialog = ({
   open,
   onOpenChange,
@@ -33,7 +31,6 @@ export const FavoritesDialog = ({
   const navigate = useNavigate();
   const { favorites, isLoading, removeFromFavorites } = useFavoritesStore();
   const { user, setUser } = useAuth();
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex flex-col justify-start items-start max-h-[80vh] min-h-fit min-w-[60vw] overflow-y-auto overflow-x-hidden bg-background">
@@ -43,7 +40,6 @@ export const FavoritesDialog = ({
             Your Favorite Futsals
           </DialogTitle>
         </DialogHeader>
-
         <div className="pt-1 pb-2 px-0">
           {isLoading ? (
             <div className="flex justify-center py-8">
@@ -77,7 +73,7 @@ export const FavoritesDialog = ({
                     key={card._id}
                     className="flex w-full bg-card rounded-xl shadow-md border hover:shadow-lg transition-shadow p-4 items-center gap-4"
                   >
-                    {/* Image */}
+                    {}
                     <img
                       src={
                         card.images[0] || "/images/futsals_page/search_img.jpg"
@@ -85,7 +81,7 @@ export const FavoritesDialog = ({
                       alt={card.name}
                       className="w-28 h-20 object-cover rounded-lg border flex-shrink-0 bg-muted"
                     />
-                    {/* Info */}
+                    {}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-lg font-bold text-foreground truncate">
@@ -109,7 +105,7 @@ export const FavoritesDialog = ({
                         {card.amenities.slice(0, 3).join(" • ")}
                       </div>
                     </div>
-                    {/* Price & Actions */}
+                    {}
                     <div className="flex flex-col items-end gap-2 min-w-[120px]">
                       <div className="flex items-baseline gap-1">
                         <span className="text-lg font-bold text-foreground">

@@ -1,13 +1,10 @@
 import { Button } from "@ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@ui/card";
 import { useLocation, useNavigate } from "react-router-dom";
-
 export default function ForgotStatus() {
   const location = useLocation();
   const navigate = useNavigate();
-  // Status and image can be passed via location.state
   const { status = "Email sent" } = location.state || {};
-
   return (
     <div className="bg-muted flex min-h-screen items-center justify-center">
       <Card className="bg-background animate-fade-in-up mx-auto w-full max-w-sm border-none shadow-lg">

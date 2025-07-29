@@ -11,7 +11,6 @@ import {
 import { Button } from "@/shared/components/ui/button";
 import { toast } from "sonner";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
-
 export default function OAuthCallback() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -20,21 +19,16 @@ export default function OAuthCallback() {
     "loading",
   );
   const [error, setError] = useState<string>("");
-
   useEffect(() => {
     const handleOAuthCallback = async () => {
       try {
         const code = searchParams.get("code");
         const state = searchParams.get("state");
-
         if (!code) {
           setError("No authorization code received");
           setStatus("error");
           return;
         }
-
-        // Call the backend to exchange the code for tokens
-        // The backend callback route only accepts GET requests
         const response = await apiQuery<{
           success: boolean;
           message: string;
@@ -46,17 +40,12 @@ export default function OAuthCallback() {
         }>(
           `users/google/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state || "")}`,
         );
-
         if (response.success) {
-          // Use AuthContext to set the user state
           const success = await login(response.data.user);
           if (success) {
             setStatus("success");
             toast.success("Google authentication successful! Redirecting...");
-
-            // Add a small delay to allow the auth state to update
             setTimeout(() => {
-              // Role-based navigation
               if (response.data.user.role === "admin") {
                 navigate("/admin/dashboard", { replace: true });
               } else if (response.data.user.role === "futsalOwner") {
@@ -80,21 +69,16 @@ export default function OAuthCallback() {
         setStatus("error");
       }
     };
-
     handleOAuthCallback();
   }, [searchParams, navigate, login]);
-
   const handleRetry = () => {
     setStatus("loading");
     setError("");
-    // Redirect back to login page
     navigate("/login", { replace: true });
   };
-
   const handleGoHome = () => {
     navigate("/", { replace: true });
   };
-
   return (
     <div className="bg-background flex min-h-screen items-center justify-center">
       <div className="bg-background/80 animate-fade-in-up flex w-full max-w-md flex-col items-stretch gap-0 overflow-hidden rounded-md shadow-lg">
@@ -116,7 +100,6 @@ export default function OAuthCallback() {
                   </p>
                 </>
               )}
-
               {status === "success" && (
                 <>
                   <CheckCircle className="h-12 w-12 text-green-500" />
@@ -128,7 +111,6 @@ export default function OAuthCallback() {
                   </p>
                 </>
               )}
-
               {status === "error" && (
                 <>
                   <XCircle className="h-12 w-12 text-red-500" />

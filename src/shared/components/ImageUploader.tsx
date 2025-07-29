@@ -1,26 +1,21 @@
 import { useState, useRef, type DragEvent, type ChangeEvent } from "react";
 import { Button } from "@ui/button";
 import { Upload, X, UserPlus } from "lucide-react";
-
 export interface ImageUploadRequest {
   image: File;
   currentImageUrl?: string;
 }
-
 export interface ImageUploadResponse {
   message: string;
   imageUrl: string;
 }
-
 interface ImageUploaderProps {
   uploadFn: (params: { image: File; currentImageUrl?: string }) => void;
   imageURL?: string;
   fallbackText: string;
   isUploading?: boolean;
-
   buttonText: string;
 }
-
 const ImageUploader = ({
   uploadFn,
   imageURL,
@@ -31,47 +26,34 @@ const ImageUploader = ({
   const [dragActive, setDragActive] = useState<boolean>(false);
   const [image, setImage] = useState<File | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  // Handle drag events
   const handleDrag = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(e.type === "dragenter" || e.type === "dragover");
   };
-
-  // Handle drop events
   const handleDrop = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-
     const file = e.dataTransfer.files[0];
     if (file?.type.startsWith("image/")) setImage(file);
   };
-
-  // Handle file input change
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file?.type.startsWith("image/")) setImage(file);
   };
-
-  // Handle image upload
   const handleUpload = () => {
     if (!image) {
       alert("Please select an image to upload.");
       return;
     }
-
     uploadFn({ image, currentImageUrl: imageURL });
   };
-
-  // Handle image removal
   const handleRemove = () => {
     setImage(null);
     setDragActive(false);
     if (inputRef.current) inputRef.current.value = "";
   };
-
   return (
     <div className="w-96 h-96 flex flex-col items-center justify-center gap-12 p-6">
       <div
@@ -92,7 +74,6 @@ const ImageUploader = ({
           accept="image/*"
           onChange={handleChange}
         />
-
         {!image && (!imageURL || imageURL === "null") && (
           <div className="w-full h-full flex flex-col items-center justify-center bg-muted rounded-full p-6 text-center">
             <UserPlus className="w-16 h-16 text-muted-foreground mb-4" />
@@ -101,7 +82,6 @@ const ImageUploader = ({
             </p>
           </div>
         )}
-
         {!image && imageURL && imageURL !== "null" && (
           <img
             src={imageURL}
@@ -109,7 +89,6 @@ const ImageUploader = ({
             className="w-full h-full object-cover"
           />
         )}
-
         {image && (
           <div className="relative w-full h-full">
             <img
@@ -125,7 +104,6 @@ const ImageUploader = ({
             </button>
           </div>
         )}
-
         {!image && (
           <div
             className="absolute inset-0 flex items-center justify-center bg-primary/0 hover:bg-primary/80 transition-colors group cursor-pointer"
@@ -137,7 +115,6 @@ const ImageUploader = ({
             </div>
           </div>
         )}
-
         {image && (
           <div
             onClick={handleRemove}
@@ -147,7 +124,6 @@ const ImageUploader = ({
           </div>
         )}
       </div>
-
       <Button
         onClick={handleUpload}
         disabled={!image || isUploading}
@@ -158,5 +134,4 @@ const ImageUploader = ({
     </div>
   );
 };
-
 export default ImageUploader;

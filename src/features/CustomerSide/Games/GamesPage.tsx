@@ -15,22 +15,19 @@ import { apiQuery, apiMutation } from "@/shared/lib/apiWrapper";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { MapPin, MapPinOff, Search } from "lucide-react";
-
 interface FutsalLocation {
   coordinates: [number, number];
   address: string;
   city: string;
 }
-
 interface Futsal {
   _id: string;
   name: string;
   location: FutsalLocation;
 }
-
 export interface PartialBooking {
   _id: string;
-  futsal: Futsal | string; // Can be string if populated or just ID
+  futsal: Futsal | string;
   date: string;
   startTime: string;
   endTime: string;
@@ -43,7 +40,6 @@ export interface PartialBooking {
   createdAt: string;
   updatedAt: string;
 }
-
 export default function GamesPage() {
   const navigate = useNavigate();
   const [bookings, setBookings] = useState<PartialBooking[]>([]);
@@ -54,27 +50,23 @@ export default function GamesPage() {
     lng: number;
   } | null>(null);
   const [showRadiusSlider, setShowRadiusSlider] = useState(false);
-  const [radius, setRadius] = useState(5); // Default 5km radius
+  const [radius, setRadius] = useState(5);
   const [isLocating, setIsLocating] = useState(false);
   const [sliderValue, setSliderValue] = useState(5);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
   const fetchPartialBookings = useCallback(
     async (location?: { lat: number; lng: number }, searchRadius = radius) => {
       try {
         setLoading(true);
         console.log("Fetching partial bookings...");
-
         let endpoint = "bookings/partial";
         const params = new URLSearchParams();
-
         if (location) {
           params.append("lat", location.lat.toString());
           params.append("lng", location.lng.toString());
           params.append("radius", searchRadius.toString());
           endpoint += `?${params.toString()}`;
         }
-
         const response = await apiQuery<PartialBooking[]>(endpoint);
         console.log("API Response:", response);
         setBookings(Array.isArray(response) ? response : []);
@@ -87,22 +79,18 @@ export default function GamesPage() {
     },
     [radius],
   );
-
   useEffect(() => {
     fetchPartialBookings();
   }, [fetchPartialBookings]);
-
   const handleLocationClick = async () => {
     if (userLocation) {
       setShowRadiusSlider(!showRadiusSlider);
       return;
     }
-
     if (!navigator.geolocation) {
       toast.error("Geolocation is not supported by your browser");
       return;
     }
-
     setIsLocating(true);
     try {
       const position = await new Promise<GeolocationPosition>(
@@ -114,7 +102,6 @@ export default function GamesPage() {
           });
         },
       );
-
       const { latitude: lat, longitude: lng } = position.coords;
       setUserLocation({ lat, lng });
       setShowRadiusSlider(true);
@@ -129,29 +116,22 @@ export default function GamesPage() {
       setIsLocating(false);
     }
   };
-
   const handleRadiusChange = useCallback(
     (value: number[]) => {
       const newRadius = value[0];
       setSliderValue(newRadius);
-
-      // Clear any existing timeout
       if (debounceTimeoutRef.current !== null) {
         clearTimeout(debounceTimeoutRef.current);
       }
-
-      // Set a new timeout
       debounceTimeoutRef.current = setTimeout(() => {
         setRadius(newRadius);
         if (userLocation) {
           fetchPartialBookings(userLocation, newRadius);
         }
-      }, 300); // 300ms debounce delay
+      }, 300);
     },
     [userLocation, fetchPartialBookings],
   );
-
-  // Clean up the timeout on component unmount
   useEffect(() => {
     return () => {
       if (debounceTimeoutRef.current !== null) {
@@ -160,16 +140,12 @@ export default function GamesPage() {
       }
     };
   }, []);
-
-  // Update slider value when radius changes from other sources
   useEffect(() => {
     setSliderValue(radius);
   }, [radius]);
-
   const handleHostGame = () => {
     navigate("/futsals/select");
   };
-
   const handleJoinGame = async (bookingId: string) => {
     try {
       await apiMutation({
@@ -177,10 +153,7 @@ export default function GamesPage() {
         endpoint: `bookings/${bookingId}/join`,
         body: {},
       });
-
       toast.success("Successfully joined the game!");
-
-      // Update the UI by removing the joined game from the list
       setBookings((prevBookings) =>
         prevBookings.filter((booking) => booking._id !== bookingId),
       );
@@ -189,11 +162,8 @@ export default function GamesPage() {
       toast.error("Failed to join the game. Please try again.");
     }
   };
-
   const filteredBookings = bookings.filter((booking) => {
-    // Handle case where futsal might be just an ID
-    if (typeof booking.futsal === "string") return true; // Show all if we can't filter
-
+    if (typeof booking.futsal === "string") return true;
     const searchLower = searchQuery.toLowerCase();
     return (
       booking.futsal?.name?.toLowerCase().includes(searchLower) ||
@@ -201,14 +171,12 @@ export default function GamesPage() {
       booking.futsal?.location?.city?.toLowerCase().includes(searchLower)
     );
   });
-
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Find or Host a Game</h1>
         <Button onClick={handleHostGame}>Host a Game</Button>
       </div>
-
       <div className="mb-6 flex flex-wrap items-center gap-4">
         <div className="relative flex-1 min-w-[200px] max-w-md">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -219,7 +187,6 @@ export default function GamesPage() {
             className="pl-10"
           />
         </div>
-
         <div className="flex items-center gap-2">
           <Button
             variant={userLocation ? "default" : "outline"}
@@ -236,7 +203,6 @@ export default function GamesPage() {
             )}
             {userLocation ? "Nearby" : "Find Nearby"}
           </Button>
-
           {showRadiusSlider && userLocation && (
             <div className="flex items-center gap-3 ml-2 w-48">
               <span className="text-sm whitespace-nowrap">
@@ -254,7 +220,6 @@ export default function GamesPage() {
           )}
         </div>
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {loading ? (
           <div className="col-span-full text-center py-12">

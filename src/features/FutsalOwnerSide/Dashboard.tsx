@@ -14,9 +14,7 @@ import {
 import React from "react";
 import { useNotifications } from "@/shared/hooks/useNotifications";
 import { useDashboardSummary } from "@/shared/hooks/useDashboardSummary";
-
 const futsalId = import.meta.env.VITE_FUTSAL_ID;
-
 interface StatCardProps {
   title: string;
   value: React.ReactNode;
@@ -24,7 +22,6 @@ interface StatCardProps {
   subtitle?: string;
   trend?: number;
 }
-
 const StatCard: React.FC<StatCardProps> = ({
   title,
   value: valueProp,
@@ -32,16 +29,13 @@ const StatCard: React.FC<StatCardProps> = ({
   subtitle,
   trend,
 }) => {
-  // Safely extract the display value
   const getDisplayValue = () => {
     if (valueProp === null || valueProp === undefined) return "";
     if (typeof valueProp === "object" && valueProp !== null) {
-      // Handle case where value might be an object with a value property
       return (valueProp as any).value ?? "";
     }
     return valueProp;
   };
-
   const displayValue = getDisplayValue();
   const isEmpty =
     displayValue === 0 ||
@@ -49,8 +43,6 @@ const StatCard: React.FC<StatCardProps> = ({
     displayValue === "" ||
     displayValue === null ||
     displayValue === undefined;
-
-  // Define color schemes based on card type
   const getCardStyles = () => {
     switch (title) {
       case "Current Pricing":
@@ -90,9 +82,7 @@ const StatCard: React.FC<StatCardProps> = ({
         };
     }
   };
-
   const { iconBg, iconColor, borderColor } = getCardStyles();
-
   return (
     <Card
       className={`h-full flex flex-col justify-between transition-all duration-200 ${isEmpty ? "opacity-80 hover:opacity-100" : ""} border ${borderColor} hover:shadow-md`}
@@ -115,7 +105,6 @@ const StatCard: React.FC<StatCardProps> = ({
             <Icon className="h-5 w-5" />
           </div>
         </div>
-
         {subtitle && (
           <div className="mt-auto pt-2">
             {isEmpty ? (
@@ -129,7 +118,6 @@ const StatCard: React.FC<StatCardProps> = ({
             )}
           </div>
         )}
-
         {!isEmpty && trend !== undefined && (
           <div
             className={`mt-2 flex items-center text-xs font-medium ${trend >= 0 ? "text-green-500" : "text-red-500"}`}
@@ -143,7 +131,6 @@ const StatCard: React.FC<StatCardProps> = ({
             yesterday
           </div>
         )}
-
         {isEmpty && (
           <div className="mt-2 flex items-center text-xs text-muted-foreground/80 dark:text-muted-foreground/70">
             <Info className="h-3 w-3 mr-1 opacity-70" />
@@ -156,11 +143,9 @@ const StatCard: React.FC<StatCardProps> = ({
     </Card>
   );
 };
-
 function formatCurrency(amount: number) {
   return `Rs. ${amount?.toLocaleString()}`;
 }
-
 export default function FutsalOwnerDashboardHome() {
   const {
     data: summary,
@@ -172,7 +157,6 @@ export default function FutsalOwnerDashboardHome() {
   const notifications = Array.isArray(notificationsData)
     ? notificationsData
     : [];
-
   if (isLoading)
     return (
       <div className="flex items-center justify-center h-64">
@@ -198,7 +182,6 @@ export default function FutsalOwnerDashboardHome() {
         </div>
       </div>
     );
-
   return (
     <div className="flex flex-col px-4 py-2 gap-3">
       <div className="flex justify-between items-center">
@@ -206,7 +189,7 @@ export default function FutsalOwnerDashboardHome() {
           Dashboard Overview
         </h1>
       </div>
-      {/* Top Row - Stats Cards */}
+      {}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 min-h-[20vh]">
         <StatCard
           title="Current Pricing"
@@ -278,11 +261,9 @@ export default function FutsalOwnerDashboardHome() {
           }
         />
       </div>
-
-      {/* Bottom Row - Three Main Sections */}
-
+      {}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 flex-1 min-h-[50vh]">
-        {/* Overall Stats Today */}
+        {}
         <Card className="h-full flex flex-col border border-blue-200 dark:border-blue-800/50">
           <CardHeader className="p-4 pb-2 border-b border-blue-100 dark:border-blue-800/30 bg-blue-50/50 dark:bg-blue-900/10">
             <CardTitle className="flex items-center gap-2 text-base font-semibold text-blue-800 dark:text-blue-200">
@@ -348,7 +329,6 @@ export default function FutsalOwnerDashboardHome() {
                 typeof stat === "object"
                   ? (stat as any)?.label
                   : key.charAt(0).toUpperCase() + key.slice(1);
-
               return (
                 <div
                   key={key}
@@ -362,7 +342,6 @@ export default function FutsalOwnerDashboardHome() {
                 </div>
               );
             })}
-
             <div className="bg-amber-50 dark:bg-amber-900/10 p-3 rounded-lg flex flex-col items-center justify-center text-center h-24 border border-amber-100 dark:border-amber-800/30 hover:bg-amber-100/50 dark:hover:bg-amber-900/20 transition-colors">
               <p className="text-sm text-amber-800/80 dark:text-amber-200/80 mb-1">
                 Rating
@@ -397,8 +376,7 @@ export default function FutsalOwnerDashboardHome() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Today's Schedule */}
+        {}
         <Card className="h-full flex flex-col border border-orange-200 dark:border-orange-800/50">
           <CardHeader className="p-4 pb-2 border-b border-orange-100 dark:border-orange-800/30 bg-orange-50/50 dark:bg-orange-900/10">
             <CardTitle className="flex items-center gap-2 text-base font-semibold text-orange-800 dark:text-orange-200">
@@ -454,8 +432,7 @@ export default function FutsalOwnerDashboardHome() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Recent Notifications */}
+        {}
         <Card className="h-full flex flex-col border border-red-200 dark:border-red-800/50">
           <CardHeader className="p-4 pb-2 border-b border-red-100 dark:border-red-800/30 bg-red-50/50 dark:bg-red-900/10">
             <CardTitle className="flex items-center gap-2 text-base font-semibold text-red-800 dark:text-red-200">

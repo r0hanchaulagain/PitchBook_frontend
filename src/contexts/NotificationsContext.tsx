@@ -9,7 +9,6 @@ import {
 import { socketService } from "@lib/socket";
 import { apiQuery, apiMutation } from "@lib/apiWrapper";
 import { useAuth } from "./AuthContext";
-
 export interface Notification {
   _id: string;
   user: string;
@@ -21,7 +20,7 @@ export interface Notification {
     | "booking_cancelled"
     | "general";
   isRead: boolean;
-  time?: string; // Add optional time property
+  time?: string;
   meta: {
     booking?: string;
     futsal?: string;
@@ -30,7 +29,6 @@ export interface Notification {
   createdAt: string;
   updatedAt: string;
 }
-
 interface NotificationsContextType {
   notifications: Notification[];
   unreadCount: number;
@@ -39,11 +37,9 @@ interface NotificationsContextType {
   isLoading: boolean;
   error: Error | null;
 }
-
 const NotificationsContext = createContext<
   NotificationsContextType | undefined
 >(undefined);
-
 export const NotificationsProvider = ({
   children,
 }: {
@@ -53,9 +49,7 @@ export const NotificationsProvider = ({
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-
   const unreadCount = notifications.filter((n) => !n.isRead).length;
-
   const fetchInitialNotifications = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -70,12 +64,11 @@ export const NotificationsProvider = ({
       setError(
         err instanceof Error ? err : new Error("Failed to fetch notifications"),
       );
-      setNotifications([]); // Ensure we have an empty array on error
+      setNotifications([]);
     } finally {
       setIsLoading(false);
     }
   }, []);
-
   const updateNotification = useCallback((notification: Notification) => {
     setNotifications((prev) => {
       const exists = prev.some((n) => n._id === notification._id);
@@ -85,31 +78,22 @@ export const NotificationsProvider = ({
       return [notification, ...prev];
     });
   }, []);
-
   const markAsRead = useCallback(
     async (notificationIds: string[]) => {
       if (!notificationIds.length || !isAuthenticated) return;
-
       try {
-        // Optimistic update
         setNotifications((prev) =>
           prev.map((n) =>
             notificationIds.includes(n._id) ? { ...n, isRead: true } : n,
           ),
         );
-
-        // Call the API to mark as read using apiMutation for POST request
         await apiMutation({
           method: "POST",
           endpoint: "notifications/mark-read",
           body: { notificationIds },
         });
-
-        // The server will emit a notification:read event through WebSocket
-        // which will be handled by the socket listener
       } catch (err) {
         console.error("Failed to mark notification as read:", err);
-        // Revert on error
         setNotifications((prev) =>
           prev.map((n) =>
             notificationIds.includes(n._id) ? { ...n, isRead: false } : n,
@@ -124,15 +108,12 @@ export const NotificationsProvider = ({
     },
     [isAuthenticated],
   );
-
   const markAllAsRead = useCallback(async () => {
     if (!isAuthenticated) return;
-
     try {
       const unreadIds = notifications
         .filter((n) => !n.isRead)
         .map((n) => n._id);
-
       if (unreadIds.length > 0) {
         await markAsRead(unreadIds);
       }
@@ -145,26 +126,17 @@ export const NotificationsProvider = ({
       );
     }
   }, [markAsRead, notifications, isAuthenticated]);
-
-  // Setup socket listeners and fetch initial data when component mounts
   useEffect(() => {
-    // Only fetch notifications and setup socket if user is authenticated
     if (!isAuthenticated) {
       setNotifications([]);
       setError(null);
       return;
     }
-
-    // Fetch initial notifications
     fetchInitialNotifications();
-
-    // Handle new notification event
     const handleNewNotification = (notification: Notification) => {
       updateNotification(notification);
-      // You could also show a toast here
       console.log("New notification:", notification);
     };
-
     const handleNotificationRead = (data: { notificationIds: string[] }) => {
       setNotifications((prev) =>
         prev.map((n) =>
@@ -172,25 +144,19 @@ export const NotificationsProvider = ({
         ),
       );
     };
-
-    // Handle notification read error event
     const handleNotificationReadError = (error: { message: string }) => {
       console.error("Error marking notification as read:", error.message);
       setError(new Error(error.message));
     };
-
-    // Set up socket listeners
     socketService.on("notification", handleNewNotification);
     socketService.on("notification:read", handleNotificationRead);
     socketService.on("notification:read:error", handleNotificationReadError);
-
     return () => {
       socketService.off("notification", handleNewNotification);
       socketService.off("notification:read", handleNotificationRead);
       socketService.off("notification:read:error", handleNotificationReadError);
     };
   }, [fetchInitialNotifications, isAuthenticated]);
-
   return (
     <NotificationsContext.Provider
       value={{
@@ -206,7 +172,6 @@ export const NotificationsProvider = ({
     </NotificationsContext.Provider>
   );
 };
-
 export const useNotifications = (): NotificationsContextType => {
   const context = useContext(NotificationsContext);
   if (context === undefined) {
@@ -216,5 +181,4 @@ export const useNotifications = (): NotificationsContextType => {
   }
   return context;
 };
-
 export default NotificationsContext;

@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { useFavoritesStore } from "@/shared/store/favoritesStore";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
-
 interface FutsalCardProps {
   futsal: {
     _id: string;
@@ -22,56 +21,42 @@ interface FutsalCardProps {
     };
   };
 }
-
 export const FutsalCard = ({ futsal }: FutsalCardProps) => {
   const navigate = useNavigate();
   const { user, isAuthenticated, setUser } = useAuth();
   const { addToFavorites, removeFromFavorites, isFavorited } =
     useFavoritesStore();
-
-  // Local state to handle immediate UI feedback
   const [isFavorite, setIsFavorite] = useState(() =>
     isFavorited(futsal._id, user?.favoritesFutsal),
   );
   const [isLoading, setIsLoading] = useState(false);
-
   const isUser = user?.role === "user";
-
   const handleFavoriteClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-
     if (!isAuthenticated) {
       navigate("/auth/login");
       return;
     }
-
     setIsLoading(true);
     const wasFavorite = isFavorite;
-
     try {
-      // Optimistically update the UI
       setIsFavorite(!wasFavorite);
-
       if (wasFavorite) {
         await removeFromFavorites(futsal._id, user, setUser);
       } else {
         await addToFavorites(futsal._id, user, setUser);
       }
     } catch (error) {
-      // Revert on error
       setIsFavorite(wasFavorite);
       console.error("Failed to update favorite status:", error);
     } finally {
       setIsLoading(false);
     }
   };
-
-  // Sync with store when it changes
   useEffect(() => {
     setIsFavorite(isFavorited(futsal._id, user?.favoritesFutsal));
   }, [isFavorited, futsal._id, user?.favoritesFutsal]);
-
   return (
     <div
       key={futsal._id}

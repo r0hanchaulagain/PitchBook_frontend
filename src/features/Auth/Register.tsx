@@ -19,7 +19,6 @@ import {
 } from "@ui/dropdown-menu";
 import { GoogleOAuthButton } from "@/shared/components/ui/GoogleOAuthButton";
 import { CaptchaDialog } from "@/shared/components/ui/CaptchaDialog";
-
 const passwordCriteria = [
   { label: "At least 10 characters", test: (pw: string) => pw.length >= 10 },
   {
@@ -36,7 +35,6 @@ const passwordCriteria = [
     test: (pw: string) => /[^A-Za-z0-9]/.test(pw),
   },
 ];
-
 const registerSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
   password: z.string().min(1, { message: "Password is required" }),
@@ -47,9 +45,7 @@ const registerSchema = z.object({
     .regex(/^(97|98)[0-9]{8}$/, { message: "Invalid phone number format" }),
   role: z.enum(["user", "futsalOwner"]),
 });
-
 type RegisterForm = z.infer<typeof registerSchema>;
-
 export default function Register() {
   const [showPassword, setShowPassword] = useState(true);
   const [submitted, setSubmitted] = useState(false);
@@ -57,7 +53,6 @@ export default function Register() {
   const [captchaDialogOpen, setCaptchaDialogOpen] = useState(false);
   const [formData, setFormData] = useState<RegisterForm | null>(null);
   const navigate = useNavigate();
-
   const {
     register,
     handleSubmit,
@@ -69,7 +64,6 @@ export default function Register() {
     mode: "onSubmit",
     defaultValues: { role: "user" },
   });
-
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterForm & { altcha: any }) =>
       apiMutation({
@@ -97,11 +91,8 @@ export default function Register() {
       }
     },
   });
-
   function onSubmit(data: RegisterForm) {
     setSubmitted(true);
-
-    // Password validation feedback toast (manual, not zod)
     const password = data.password;
     const failed = passwordCriteria.filter((c) => !c.test(password));
     if (failed.length > 0) {
@@ -126,31 +117,23 @@ export default function Register() {
       );
       return;
     }
-
-    // Store form data and open captcha dialog
     setFormData(data);
     setCaptchaDialogOpen(true);
   }
-
   function handleCaptchaComplete(altchaValue: string) {
     if (!formData) return;
-
-    // Include ALTCHA token in the registration data
     const registrationData = {
       ...formData,
       role,
       altcha: altchaValue,
     };
-
     registerMutation.mutate(registrationData);
     setCaptchaDialogOpen(false);
   }
-
   function handleRoleChange(newRole: "user" | "futsalOwner") {
     setRole(newRole);
     setValue("role", newRole, { shouldDirty: true });
   }
-
   return (
     <>
       <div className="bg-background flex min-h-screen items-center justify-center">
@@ -163,12 +146,11 @@ export default function Register() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {/* Google OAuth Button */}
+                {}
                 <div className="mb-6">
                   <GoogleOAuthButton />
                 </div>
-
-                {/* Divider */}
+                {}
                 <div className="relative mb-6">
                   <div className="absolute inset-0 flex items-center">
                     <span className="w-full border-t" />
@@ -179,7 +161,6 @@ export default function Register() {
                     </span>
                   </div>
                 </div>
-
                 <form
                   onSubmit={handleSubmit(onSubmit)}
                   className="space-y-5"
@@ -321,7 +302,6 @@ export default function Register() {
                       </div>
                     )}
                   </div>
-
                   <Button
                     type="submit"
                     className="w-full transition-all duration-150 hover:scale-[1.02]"
@@ -354,7 +334,6 @@ export default function Register() {
           </div>
         </div>
       </div>
-
       <CaptchaDialog
         open={captchaDialogOpen}
         onOpenChange={setCaptchaDialogOpen}

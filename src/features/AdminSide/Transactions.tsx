@@ -6,8 +6,6 @@ import {
   Filter,
   Calendar as CalendarIcon,
 } from "lucide-react";
-
-// Mock data - Will be replaced with API calls
 const mockTransactions = [
   {
     id: 1,
@@ -50,7 +48,6 @@ const mockTransactions = [
     type: "subscription",
   },
 ];
-
 const Transactions = () => {
   return (
     <div className="space-y-6">
@@ -67,7 +64,6 @@ const Transactions = () => {
           </Button>
         </div>
       </div>
-
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-lg">Recent Transactions</CardTitle>
@@ -127,7 +123,6 @@ const Transactions = () => {
               </tbody>
             </table>
           </div>
-
           <div className="flex items-center justify-between mt-4 text-sm text-muted-foreground">
             <div>Showing 1 to 5 of {mockTransactions.length} entries</div>
             <div className="flex space-x-2">
@@ -150,5 +145,4 @@ const Transactions = () => {
     </div>
   );
 };
-
 export default Transactions;

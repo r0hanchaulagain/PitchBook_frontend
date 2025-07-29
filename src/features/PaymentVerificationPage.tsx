@@ -1,12 +1,8 @@
-//TODO:remove the tscheck
-// @ts-nocheck
-
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { apiQuery } from "@lib/apiWrapper";
 import Loader from "@components/layoutComponents/Loader";
 import { CheckCircle2, XCircle } from "lucide-react";
-
 const BookingVerify = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -14,27 +10,21 @@ const BookingVerify = () => {
     "loading",
   );
   const [message, setMessage] = useState("Verifying payment...");
-
   useEffect(() => {
     const bookingId = searchParams.get("purchase_order_id");
     const pidx = searchParams.get("pidx");
-
     if (!bookingId || !pidx) {
       setStatus("error");
       setMessage("Missing booking ID or payment reference.");
       return;
     }
-
-    // Detect bulk booking by prefix
     const isBulk = bookingId.startsWith("bulk_");
-
     let endpoint = "";
     if (isBulk) {
       endpoint = `/bookings/bulk/verify-payment?pidx=${pidx}`;
     } else {
       endpoint = `/bookings/${bookingId}/verify-payment?pidx=${pidx}`;
     }
-
     apiQuery(endpoint)
       .then((res) => {
         setStatus("success");
@@ -47,7 +37,6 @@ const BookingVerify = () => {
         setTimeout(() => navigate("/"), 4000);
       });
   }, [searchParams, navigate]);
-
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] bg-gradient-to-br from-gray-50 to-gray-200">
       <div className="bg-white rounded-xl shadow-lg p-8 flex flex-col items-center w-full max-w-md">
@@ -84,5 +73,4 @@ const BookingVerify = () => {
     </div>
   );
 };
-
 export default BookingVerify;

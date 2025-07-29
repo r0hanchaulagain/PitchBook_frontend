@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { socketService } from "@/shared/lib/socket";
 import { apiQuery } from "@lib/apiWrapper";
-
-// Type for the API response
 export interface DashboardSummary {
   currentPricing: {
     value: number;
@@ -72,14 +70,12 @@ export interface DashboardSummary {
   futsalId: string;
   lastUpdated: string;
 }
-
 const fetchDashboardSummary = async (
   futsalId: string,
 ): Promise<DashboardSummary> => {
   const response = await apiQuery<DashboardSummary>(
     `futsals/dashboard-summary?futsalId=${futsalId}`,
   );
-  // Ensure todaysSchedule.bookings is always an array
   return {
     ...response,
     todaysSchedule: {
@@ -90,18 +86,14 @@ const fetchDashboardSummary = async (
     },
   };
 };
-
 export function useDashboardSummary(futsalId: string) {
   const [data, setData] = useState<DashboardSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-
   const fetchData = useCallback(async () => {
     if (!futsalId) return;
-
     setIsLoading(true);
     setError(null);
-
     try {
       const result = await fetchDashboardSummary(futsalId);
       setData(result);
@@ -114,16 +106,11 @@ export function useDashboardSummary(futsalId: string) {
       setIsLoading(false);
     }
   }, [futsalId]);
-
-  // Initial data fetch
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
-  // Set up WebSocket listeners for real-time updates
   useEffect(() => {
     if (!futsalId) return;
-
     const handleDashboardUpdate = (updatedData: DashboardSummary) => {
       console.log("Received dashboard update:", updatedData);
       setData((prev) => ({
@@ -137,21 +124,14 @@ export function useDashboardSummary(futsalId: string) {
         },
       }));
     };
-
-    // Subscribe to dashboard updates
     socketService.socket?.on("dashboard:update", handleDashboardUpdate);
     socketService.socket?.emit("subscribe:dashboard", futsalId);
-
-    // Cleanup
     return () => {
       socketService.socket?.off("dashboard:update", handleDashboardUpdate);
       socketService.socket?.emit("unsubscribe:dashboard", futsalId);
     };
   }, [futsalId]);
-
-  // Return the data directly since the new structure matches what the component expects
   const mappedData = data;
-
   return {
     data: mappedData,
     isLoading,

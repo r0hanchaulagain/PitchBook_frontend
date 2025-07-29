@@ -1,6 +1,5 @@
 import React, { useRef, useState } from "react";
 import { MapPin, Calendar, Users, CreditCard } from "lucide-react";
-
 const features = [
   {
     title: "Find Nearby Futsal Grounds",
@@ -35,7 +34,6 @@ const features = [
     ),
   },
 ];
-
 const FeaturesSection: React.FC = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [borderStyle, setBorderStyle] = useState({
@@ -46,25 +44,21 @@ const FeaturesSection: React.FC = () => {
     opacity: 0,
     scale: 1,
   });
-
   const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
     const targetCard = e.currentTarget;
     if (!sectionRef.current) return;
-
     const gap = 7;
     const rect = targetCard.getBoundingClientRect();
     const sectionRect = sectionRef.current.getBoundingClientRect();
-
     setBorderStyle({
       width: rect.width + 2 * gap,
       height: rect.height + 2 * gap,
       left: rect.left - sectionRect.left - gap,
       top: rect.top - sectionRect.top - gap,
       opacity: 1,
-      scale: 1.05, // Scale border to match card
+      scale: 1.05,
     });
   };
-
   const handleSectionMouseLeave = () => {
     setBorderStyle((prev) => ({
       ...prev,
@@ -72,7 +66,6 @@ const FeaturesSection: React.FC = () => {
       scale: 1,
     }));
   };
-
   return (
     <section className="flex w-full flex-col items-center justify-center gap-12 py-10 md:py-12">
       <h1 className="text-3xl font-bold sm:text-5xl">Why PitchBook?</h1>
@@ -111,5 +104,4 @@ const FeaturesSection: React.FC = () => {
     </section>
   );
 };
-
 export default FeaturesSection;

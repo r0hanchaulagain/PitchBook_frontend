@@ -14,7 +14,7 @@ const IntroSection = () => {
             kick off your soccer journey today!
           </p>
         </div>
-        {/* Image div */}
+        {}
         <div className="relative isolate flex justify-center">
           <img
             className="z-10 max-w-[75vw] shadow-lg shadow-black/55 sm:max-w-[35vw]"
@@ -26,10 +26,4 @@ const IntroSection = () => {
     </div>
   );
 };
-
 export default IntroSection;
-
-/* 
-
-
-*/

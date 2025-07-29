@@ -47,8 +47,6 @@ import {
   SelectContent,
   SelectItem,
 } from "@radix-ui/react-select";
-
-// Type definitions
 interface StatCardProps {
   title: string;
   value: string | number;
@@ -57,7 +55,6 @@ interface StatCardProps {
   trendValue?: string;
   subtitle?: string;
 }
-
 interface User {
   id: number;
   name: string;
@@ -67,7 +64,6 @@ interface User {
   spent: number;
   joinDate: string;
 }
-
 interface Futsal {
   id: number;
   name: string;
@@ -77,8 +73,6 @@ interface Futsal {
   bookings: number;
   revenue: number;
 }
-
-// Mock data based on API endpoints
 const mockAdminData = {
   overview: {
     totalUsers: 2845,
@@ -260,12 +254,10 @@ const mockAdminData = {
     ],
   },
 };
-
 const allFutsals = [
   ...mockAdminData.topFutsals,
   ...mockAdminData.lowPerformingFutsals,
 ];
-
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [users, setUsers] = useState<User[]>(mockAdminData.topUsers);
@@ -286,7 +278,6 @@ const AdminDashboard = () => {
     rating: 0,
     pricePerHour: 0,
   });
-
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat("en-NP", {
       style: "currency",
@@ -294,11 +285,9 @@ const AdminDashboard = () => {
       minimumFractionDigits: 0,
     }).format(amount);
   };
-
   const formatNumber = (num: number): string => {
     return new Intl.NumberFormat("en-NP").format(num);
   };
-
   const StatCard = ({
     title,
     value,
@@ -336,7 +325,6 @@ const AdminDashboard = () => {
       </CardContent>
     </Card>
   );
-
   const handleCreateUser = () => {
     if (editingUser) {
       setUsers(
@@ -360,7 +348,6 @@ const AdminDashboard = () => {
     setNewUser({ name: "", email: "", role: "user", password: "" });
     setIsUserModalOpen(false);
   };
-
   const handleEditUser = (user: User) => {
     setEditingUser(user);
     setNewUser({
@@ -371,11 +358,9 @@ const AdminDashboard = () => {
     });
     setIsUserModalOpen(true);
   };
-
   const handleDeleteUser = (userId: number) => {
     setUsers(users.filter((user) => user.id !== userId));
   };
-
   const handleCreateFutsal = () => {
     if (editingFutsal) {
       setFutsals(
@@ -395,7 +380,6 @@ const AdminDashboard = () => {
     setNewFutsal({ name: "", location: "", rating: 0, pricePerHour: 0 });
     setIsFutsalModalOpen(false);
   };
-
   const handleEditFutsal = (futsal: Futsal) => {
     setEditingFutsal(futsal);
     setNewFutsal({
@@ -406,11 +390,9 @@ const AdminDashboard = () => {
     });
     setIsFutsalModalOpen(true);
   };
-
   const handleDeleteFutsal = (futsalId: number) => {
     setFutsals(futsals.filter((futsal) => futsal.id !== futsalId));
   };
-
   const renderOverview = () => (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -465,7 +447,6 @@ const AdminDashboard = () => {
       </div>
     </div>
   );
-
   const renderTopFutsals = () => (
     <Card>
       <CardHeader>
@@ -521,7 +502,6 @@ const AdminDashboard = () => {
       </CardContent>
     </Card>
   );
-
   const renderLowPerforming = () => (
     <Card>
       <CardHeader>
@@ -581,7 +561,6 @@ const AdminDashboard = () => {
       </CardContent>
     </Card>
   );
-
   const renderLocationStats = () => (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <Card>
@@ -648,7 +627,6 @@ const AdminDashboard = () => {
       </Card>
     </div>
   );
-
   const renderTopUsers = () => (
     <Card>
       <CardHeader>
@@ -697,7 +675,6 @@ const AdminDashboard = () => {
       </CardContent>
     </Card>
   );
-
   const renderAnalytics = () => (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <Card>
@@ -723,7 +700,6 @@ const AdminDashboard = () => {
           </div>
         </CardContent>
       </Card>
-
       <Card>
         <CardHeader>
           <CardTitle>Cancellation Reasons</CardTitle>
@@ -756,7 +732,6 @@ const AdminDashboard = () => {
       </Card>
     </div>
   );
-
   const renderUserManagement = () => (
     <Card>
       <CardHeader>
@@ -912,7 +887,6 @@ const AdminDashboard = () => {
       </CardContent>
     </Card>
   );
-
   const renderFutsalManagement = () => (
     <Card>
       <CardHeader>
@@ -1076,7 +1050,6 @@ const AdminDashboard = () => {
       </CardContent>
     </Card>
   );
-
   const sidebarItems = [
     { key: "overview", label: "Overview", icon: Home },
     { key: "futsals", label: "Top Futsals", icon: Star },
@@ -1087,10 +1060,9 @@ const AdminDashboard = () => {
     { key: "locations", label: "Locations", icon: MapPin },
     { key: "analytics", label: "Analytics", icon: PieChart },
   ];
-
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
+      {}
       <div className="w-64 bg-white shadow-lg">
         <div className="p-6">
           <div className="flex items-center gap-2 mb-6">
@@ -1099,7 +1071,6 @@ const AdminDashboard = () => {
             </div>
             <span className="font-bold text-lg">Admin Dashboard</span>
           </div>
-
           <nav className="space-y-2">
             {sidebarItems.map(({ key, label, icon: Icon }) => (
               <button
@@ -1118,8 +1089,7 @@ const AdminDashboard = () => {
           </nav>
         </div>
       </div>
-
-      {/* Main Content */}
+      {}
       <div className="flex-1 overflow-auto">
         <div className="bg-white shadow-sm border-b">
           <div className="px-8 py-6">
@@ -1165,9 +1135,8 @@ const AdminDashboard = () => {
             </div>
           </div>
         </div>
-
         <div className="p-8">
-          {/* Existing content sections */}
+          {}
           {activeTab === "overview" && renderOverview()}
           {activeTab === "futsals" && renderTopFutsals()}
           {activeTab === "users" && renderTopUsers()}
@@ -1181,5 +1150,4 @@ const AdminDashboard = () => {
     </div>
   );
 };
-
 export default AdminDashboard;

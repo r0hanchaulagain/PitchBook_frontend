@@ -3,37 +3,21 @@ import { lazy } from "react";
 import ContactUsPage from "@/features/CustomerSide/ContactUsPage";
 import { futsalOwnerSidebarItems, adminSidebarItems } from "./sidebar";
 import Logo from "@assets/logos/Logo.png";
-
-//Error pages
 const Unauthorized = lazy(() => import("@features/UnauthorizedPage"));
 const RouteProtection = lazy(() => import("@layoutComponents/RouteProtection"));
-
-//Layout components
 const MainLayout = lazy(() => import("@layouts/MainLayout"));
 const SidebarLayout = lazy(() => import("@/shared/layouts/SidebarLayout"));
-
-//Payment verification page
 const PaymentVerificationPage = lazy(
   () => import("@features/PaymentVerificationPage"),
 );
-
-// Auth routes
 const Login = lazy(() => import("@features/Auth/Login"));
 const Register = lazy(() => import("@features/Auth/Register"));
 const ForgotStatus = lazy(() => import("@features/Auth/ForgotStatus"));
 const ResetPassword = lazy(() => import("@features/Auth/ResetPassword"));
 const OAuthCallback = lazy(() => import("@features/Auth/OAuthCallback"));
 const EnableMFAPage = lazy(() => import("@features/Auth/EnableMFAPage"));
-
-// const AdminPage = lazy(() => import("@/pages/AdminPage"));
-// const UserPage = lazy(() => import("@/pages/UserPage"));
-// const FutsalOwnerPage = lazy(() => import("@/pages/FutsalOwnerPage"));
-
-// Customer side routes
 const LandingPage = lazy(() => import("@/features/CustomerSide/LandingPage"));
 const GamesPage = lazy(() => import("@/features/CustomerSide/Games/GamesPage"));
-
-// Futsals routes
 const ExploreFutsalsPage = lazy(
   () => import("@/features/CustomerSide/Futsals/ExploreFutsalsPage"),
 );
@@ -43,11 +27,7 @@ const FutsalDetailsPage = lazy(
 const FutsalSelectionPage = lazy(
   () => import("@/features/CustomerSide/Games/FutsalSelectionPage"),
 );
-
-// Test routes
 const TestPage = lazy(() => import("@/TestPage"));
-
-// Admin routes
 const AdminDashboard = lazy(() => import("@/features/AdminSide/Dashboard"));
 const AdminUsers = lazy(() => import("@/features/AdminSide/Users"));
 const AdminFutsals = lazy(() => import("@/features/AdminSide/Futsals"));
@@ -69,19 +49,14 @@ const FutsalOwnerDashboardFutsal = lazy(
 const FutsalOwnerDashboardTransactions = lazy(
   () => import("@/features/FutsalOwnerSide/Transactions"),
 );
-// const BookingVerify = lazy(() => import("@/pages/bookings/verify"));
-
 export default function AppRoutes() {
   return useRoutes([
-    // Public routes
     { path: "/login", element: <Login /> },
     { path: "/register", element: <Register /> },
     { path: "/auth/forgot-status", element: <ForgotStatus /> },
     { path: "/reset-password", element: <ResetPassword /> },
     { path: "/auth/oauth/callback", element: <OAuthCallback /> },
     { path: "/enable-mfa", element: <EnableMFAPage /> },
-
-    // Main layout with general authenticated routes
     {
       element: <MainLayout />,
       children: [
@@ -94,8 +69,6 @@ export default function AppRoutes() {
         { path: "/bookings/verify", element: <PaymentVerificationPage /> },
       ],
     },
-
-    // Admin layout
     {
       element: <RouteProtection allowedRoles={["admin"]} />,
       children: [
@@ -118,7 +91,6 @@ export default function AppRoutes() {
         },
       ],
     },
-    // // Futsal Owner layout
     {
       element: <RouteProtection allowedRoles={["futsalOwner"]} />,
       children: [

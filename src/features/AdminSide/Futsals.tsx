@@ -21,8 +21,6 @@ import {
   Plus,
 } from "lucide-react";
 import { useState } from "react";
-
-// Types
 interface Futsal {
   id: number;
   name: string;
@@ -35,8 +33,6 @@ interface Futsal {
   createdAt: string;
   updatedAt: string;
 }
-
-// Mock data - Will be replaced with API calls
 const mockFutsals: Futsal[] = [
   {
     id: 1,
@@ -99,21 +95,17 @@ const mockFutsals: Futsal[] = [
     updatedAt: "2023-06-15",
   },
 ];
-
 const statusVariantMap = {
   active: "default",
   pending: "secondary",
   rejected: "destructive",
   suspended: "outline",
 } as const;
-
 const Futsals = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [selectedLocation, setSelectedLocation] = useState<string>("all");
-
   const locations = Array.from(new Set(mockFutsals.map((f) => f.location)));
-
   const filteredFutsals = mockFutsals.filter((futsal) => {
     const matchesSearch =
       futsal.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -122,10 +114,8 @@ const Futsals = () => {
       selectedStatus === "all" || futsal.status === selectedStatus;
     const matchesLocation =
       selectedLocation === "all" || futsal.location === selectedLocation;
-
     return matchesSearch && matchesStatus && matchesLocation;
   });
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -135,7 +125,6 @@ const Futsals = () => {
           Add New Futsal
         </Button>
       </div>
-
       <Card>
         <CardHeader className="pb-0">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -257,5 +246,4 @@ const Futsals = () => {
     </div>
   );
 };
-
 export default Futsals;

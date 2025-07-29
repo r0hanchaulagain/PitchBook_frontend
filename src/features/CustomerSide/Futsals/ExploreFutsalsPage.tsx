@@ -17,7 +17,6 @@ import { useFavoritesStore } from "@/shared/store/favoritesStore";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import Logo from "@assets/logos/DarkLogo.png";
-
 const AMENITIES = [
   "private locker",
   "free wifi",
@@ -26,13 +25,10 @@ const AMENITIES = [
   "free water bottles",
   "changing room",
 ];
-
 const SIDES = [5, 6, 7];
-
 const FutsalsPage = () => {
   const navigate = useNavigate();
   const { user, setUser } = useAuth();
-  // Filter/search/sort UI state
   const [sortOption, setSortOption] = useState("price_asc");
   const [searchTerm, setSearchTerm] = useState("");
   const [minPrice, setMinPrice] = useState(500);
@@ -42,7 +38,7 @@ const FutsalsPage = () => {
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [showNearby, setShowNearby] = useState(false);
-  const [radius, setRadius] = useState(5); // in km
+  const [radius, setRadius] = useState(5);
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
   const [filtersApplied, setFiltersApplied] = useState(false);
@@ -51,21 +47,15 @@ const FutsalsPage = () => {
   const [showFilters, setShowFilters] = useState(false);
   const { addToFavorites, removeFromFavorites, isFavorited, fetchFavorites } =
     useFavoritesStore();
-
-  // Update futsals with favorite status
   const futsalsWithFavorites = futsals.map((futsal) => ({
     ...futsal,
     isFavorite: isFavorited(futsal._id, user?.favoritesFutsal),
   }));
-
-  // Fetch favorites when user changes
   useEffect(() => {
     if (user) {
       fetchFavorites();
     }
   }, [user, fetchFavorites]);
-
-  // Toggle favorite status with optimistic UI updates
   const toggleFavorite = async (e: React.MouseEvent, futsal: any) => {
     e.stopPropagation();
     const wasFavorite = isFavorited(futsal._id, user?.favoritesFutsal);
@@ -107,11 +97,7 @@ const FutsalsPage = () => {
       });
     }
   };
-
-  // Debounce search
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
-
-  // Fetch futsals from API
   const fetchFutsals = async (paramsOverride?: any) => {
     setLoading(true);
     const hasFilters =
@@ -121,7 +107,6 @@ const FutsalsPage = () => {
       minPrice !== 500 ||
       maxPrice !== 5000 ||
       (showNearby && lat && lng);
-
     const params: Record<string, any> = {
       minPrice,
       maxPrice,
@@ -144,7 +129,6 @@ const FutsalsPage = () => {
         ([, v]) => v !== undefined && v !== null && v !== "" && v !== "NaN",
       )
       .map(([k, v]) => {
-        // Handle different types of values
         let value: string;
         if (typeof v === "object" && v !== null) {
           value = JSON.stringify(v);
@@ -163,16 +147,12 @@ const FutsalsPage = () => {
       setLoading(false);
     }
   };
-
-  // Debounced search effect
   useEffect(() => {
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
     searchTimeout.current = setTimeout(() => {
       fetchFutsals();
     }, 400);
   }, [searchTerm]);
-
-  // Fetch on filter/sort change
   useEffect(() => {
     fetchFutsals();
   }, [
@@ -189,8 +169,6 @@ const FutsalsPage = () => {
     radius,
     filtersApplied,
   ]);
-
-  // Handle amenities
   const handleAmenityChange = (amenity: string) => {
     setSelectedAmenities((prev) =>
       prev.includes(amenity)
@@ -198,15 +176,11 @@ const FutsalsPage = () => {
         : [...prev, amenity],
     );
   };
-
-  // Handle side
   const handleSideChange = (side: number) => {
     setSelectedSides((prev) =>
       prev.includes(side) ? prev.filter((s) => s !== side) : [...prev, side],
     );
   };
-
-  // Handle Nearby
   const handleNearby = () => {
     if (!navigator.geolocation) return alert("Geolocation not supported");
     navigator.geolocation.getCurrentPosition(
@@ -221,12 +195,10 @@ const FutsalsPage = () => {
       },
     );
   };
-
   const handleFilterApply = () => {
     setFiltersApplied((v) => !v);
     setShowFilters(false);
   };
-
   const handleReset = () => {
     setMinPrice(500);
     setMaxPrice(5000);
@@ -240,14 +212,12 @@ const FutsalsPage = () => {
     setSearchTerm("");
     setShowFilters(false);
   };
-
   const getHeadingText = () => {
     if (searchTerm) {
       return `Search Results for ${searchTerm}: ${futsals.length} futsals found`;
     }
     return "Explore Futsals";
   };
-
   return (
     <main>
       <div className="relative isolate h-[50vh] max-h-[50vh] overflow-hidden bg-primary w-full">
@@ -472,7 +442,7 @@ const FutsalsPage = () => {
               </div>
             )}
           </div>
-          {/* Pagination Controls */}
+          {}
           <div className="flex justify-center gap-4 my-6 sm:my-8">
             <Button
               variant="default"
@@ -499,5 +469,4 @@ const FutsalsPage = () => {
     </main>
   );
 };
-
 export default FutsalsPage;

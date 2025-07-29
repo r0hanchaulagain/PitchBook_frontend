@@ -2,12 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
 import { Search, MapPin, ChevronDown, Filter, Heart } from "lucide-react";
 import { apiQuery } from "@/shared/lib/apiWrapper";
@@ -23,7 +17,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@radix-ui/react-dropdown-menu";
-
 const AMENITIES = [
   "private locker",
   "free wifi",
@@ -32,15 +25,12 @@ const AMENITIES = [
   "free water bottles",
   "changing room",
 ];
-
 const SIDES = [5, 6, 7];
-
 export default function FutsalSelectionPage() {
   const navigate = useNavigate();
   const [futsals, setFutsals] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const { user, setUser } = useAuth();
-  // Filter/search/sort UI state
   const [sortOption, setSortOption] = useState("price_asc");
   const [searchTerm, setSearchTerm] = useState("");
   const [minPrice, setMinPrice] = useState(500);
@@ -50,7 +40,7 @@ export default function FutsalSelectionPage() {
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
   const [showNearby, setShowNearby] = useState(false);
-  const [radius, setRadius] = useState(5); // in km
+  const [radius, setRadius] = useState(5);
   const [lat, setLat] = useState<number | null>(null);
   const [lng, setLng] = useState<number | null>(null);
   const [filtersApplied, setFiltersApplied] = useState(false);
@@ -58,48 +48,36 @@ export default function FutsalSelectionPage() {
   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
   const { addToFavorites, removeFromFavorites, isFavorited, fetchFavorites } =
     useFavoritesStore();
-
-  // Fetch favorites when user changes or when component mounts
   useEffect(() => {
     if (user) {
       fetchFavorites();
     }
   }, [user, fetchFavorites]);
-
-  // Refresh futsals list when favorites change
   useEffect(() => {
     fetchFutsals();
   }, [user?.favoritesFutsal]);
-
-  // Toggle favorite status with optimistic UI updates
   const toggleFavorite = async (e: React.MouseEvent, futsal: any) => {
     e.stopPropagation();
     if (!user) {
       toast.error("Please login to add to favorites");
       return;
     }
-
     const wasFavorite = isFavorited(futsal._id, user.favoritesFutsal);
     const toastId = toast.loading(
       wasFavorite ? "Removing from favorites..." : "Adding to favorites...",
     );
-
     try {
       let success = false;
-
-      // Optimistically update the UI
       const updatedFutsals = futsals.map((f) => ({
         ...f,
         isFavorite: f._id === futsal._id ? !wasFavorite : f.isFavorite,
       }));
       setFutsals(updatedFutsals);
-
       if (wasFavorite) {
         success = await removeFromFavorites(futsal._id, user, setUser);
       } else {
         success = await addToFavorites(futsal._id, user, setUser);
       }
-
       if (success) {
         toast.success(
           wasFavorite ? "Removed from favorites" : "Added to favorites",
@@ -111,26 +89,22 @@ export default function FutsalSelectionPage() {
           },
         );
       } else {
-        // Revert optimistic update on failure
         const revertedFutsals = futsals.map((f) => ({
           ...f,
           isFavorite: f._id === futsal._id ? wasFavorite : f.isFavorite,
         }));
         setFutsals(revertedFutsals);
-
         toast.error("Failed to update favorites", {
           id: toastId,
           description: "Please try again.",
         });
       }
     } catch (error: any) {
-      // Revert optimistic update on error
       const revertedFutsals = futsals.map((f) => ({
         ...f,
         isFavorite: f._id === futsal._id ? wasFavorite : f.isFavorite,
       }));
       setFutsals(revertedFutsals);
-
       const errorMessage =
         error.response?.data?.message ||
         "Failed to update favorites. Please try again.";
@@ -140,8 +114,6 @@ export default function FutsalSelectionPage() {
       });
     }
   };
-
-  // Fetch futsals from API
   const fetchFutsals = async (paramsOverride?: any) => {
     setLoading(true);
     const hasFilters =
@@ -151,7 +123,6 @@ export default function FutsalSelectionPage() {
       minPrice !== 500 ||
       maxPrice !== 5000 ||
       (showNearby && lat && lng);
-
     const params: Record<string, any> = {
       minPrice,
       maxPrice,
@@ -174,7 +145,6 @@ export default function FutsalSelectionPage() {
         ([, v]) => v !== undefined && v !== null && v !== "" && v !== "NaN",
       )
       .map(([k, v]) => {
-        // Handle different types of values
         let value: string;
         if (typeof v === "object" && v !== null) {
           value = JSON.stringify(v);
@@ -193,16 +163,12 @@ export default function FutsalSelectionPage() {
       setLoading(false);
     }
   };
-
-  // Debounced search effect
   useEffect(() => {
     if (searchTimeout.current) clearTimeout(searchTimeout.current);
     searchTimeout.current = setTimeout(() => {
       fetchFutsals();
     }, 400);
   }, [searchTerm]);
-
-  // Fetch on filter/sort change
   useEffect(() => {
     fetchFutsals();
   }, [
@@ -219,8 +185,6 @@ export default function FutsalSelectionPage() {
     radius,
     filtersApplied,
   ]);
-
-  // Handle amenities
   const handleAmenityChange = (amenity: string) => {
     setSelectedAmenities((prev) =>
       prev.includes(amenity)
@@ -228,15 +192,11 @@ export default function FutsalSelectionPage() {
         : [...prev, amenity],
     );
   };
-
-  // Handle side
   const handleSideChange = (side: number) => {
     setSelectedSides((prev) =>
       prev.includes(side) ? prev.filter((s) => s !== side) : [...prev, side],
     );
   };
-
-  // Handle Nearby
   const handleNearby = () => {
     if (!navigator.geolocation) return alert("Geolocation not supported");
     navigator.geolocation.getCurrentPosition(
@@ -251,12 +211,10 @@ export default function FutsalSelectionPage() {
       },
     );
   };
-
   const handleFilterApply = () => {
     setFiltersApplied((v) => !v);
     setShowFilters(false);
   };
-
   const handleReset = () => {
     setMinPrice(500);
     setMaxPrice(5000);
@@ -270,8 +228,6 @@ export default function FutsalSelectionPage() {
     setSearchTerm("");
     setShowFilters(false);
   };
-
-  // Update futsals with favorite status from store
   const futsalsWithFavorites = futsals.map((futsal) => {
     const isFavorite = isFavorited(futsal._id, user?.favoritesFutsal);
     return {
@@ -279,18 +235,15 @@ export default function FutsalSelectionPage() {
       isFavorite,
     };
   });
-
   const handleViewDetails = (futsalId: string) => {
     navigate(`/futsals/${futsalId}?partial=true`);
   };
-
   const getHeadingText = () => {
     if (searchTerm) {
       return `Search Results for ${searchTerm}: ${futsals.length} futsals found`;
     }
     return "Explore Futsals";
   };
-
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -302,9 +255,8 @@ export default function FutsalSelectionPage() {
             <Skeleton className="h-10 w-full rounded-md" />
           </div>
         </div>
-
         <div className="flex flex-col md:flex-row gap-6">
-          {/* Filters Sidebar */}
+          {}
           <div className="w-full md:w-64 lg:w-80 space-y-6">
             <Skeleton className="h-6 w-24 mb-4" />
             {[...Array(5)].map((_, i) => (
@@ -315,15 +267,13 @@ export default function FutsalSelectionPage() {
             ))}
             <Skeleton className="h-10 w-full mt-4" />
           </div>
-
-          {/* Main Content */}
+          {}
           <div className="flex-1">
             <div className="flex justify-between items-center mb-6">
               <Skeleton className="h-6 w-48" />
               <Skeleton className="h-10 w-40" />
             </div>
-
-            {/* Listings */}
+            {}
             <div className="space-y-4">
               {[...Array(3)].map((_, i) => (
                 <div
@@ -343,13 +293,11 @@ export default function FutsalSelectionPage() {
                 </div>
               ))}
             </div>
-
-            {/* Map Placeholder */}
+            {}
             <div className="mt-8 border rounded-lg overflow-hidden">
               <Skeleton className="w-full h-64" />
             </div>
-
-            {/* Pagination */}
+            {}
             <div className="flex justify-center gap-4 mt-6">
               <Skeleton className="h-10 w-24" />
               <Skeleton className="h-10 w-24" />
@@ -359,7 +307,6 @@ export default function FutsalSelectionPage() {
       </div>
     );
   }
-
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
@@ -374,7 +321,6 @@ export default function FutsalSelectionPage() {
           />
         </div>
       </div>
-
       {futsalsWithFavorites.length > 0 ? (
         <div className="flex flex-col md:flex-row w-full px-3 sm:px-6 md:px-0">
           <Button
@@ -575,7 +521,7 @@ export default function FutsalSelectionPage() {
                 ))
               )}
             </div>
-            {/* Pagination Controls */}
+            {}
             <div className="flex justify-center gap-4 my-6 sm:my-8">
               <Button
                 variant="default"

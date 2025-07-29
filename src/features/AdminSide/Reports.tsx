@@ -13,8 +13,6 @@ import {
   TrendingUp,
   TrendingDown,
 } from "lucide-react";
-
-// Mock data - Will be replaced with API calls
 const reportData = {
   revenue: {
     current: 1245800,
@@ -84,7 +82,6 @@ const reportData = {
     },
   ],
 };
-
 const Reports = () => {
   const renderStatCard = (
     title: string,
@@ -115,7 +112,6 @@ const Reports = () => {
       </CardContent>
     </Card>
   );
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -138,8 +134,7 @@ const Reports = () => {
           </Button>
         </div>
       </div>
-
-      {/* Stats Grid */}
+      {}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {renderStatCard(
           "Total Revenue",
@@ -166,7 +161,6 @@ const Reports = () => {
           reportData.futsals.trend as "up" | "down",
         )}
       </div>
-
       <div className="grid gap-6 md:grid-cols-3">
         <Card className="md:col-span-2">
           <CardHeader>
@@ -182,7 +176,6 @@ const Reports = () => {
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader>
             <CardTitle>Recent Activities</CardTitle>
@@ -205,7 +198,6 @@ const Reports = () => {
           </CardContent>
         </Card>
       </div>
-
       <Card>
         <CardHeader>
           <CardTitle>Booking Statistics</CardTitle>
@@ -223,5 +215,4 @@ const Reports = () => {
     </div>
   );
 };
-
 export default Reports;

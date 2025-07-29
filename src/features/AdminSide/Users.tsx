@@ -12,8 +12,6 @@ import {
 } from "@ui/table";
 import { Search, UserPlus, Edit, Trash2, Eye } from "lucide-react";
 import { useState, type ChangeEvent } from "react";
-
-// Types
 interface User {
   id: number;
   name: string;
@@ -23,8 +21,6 @@ interface User {
   joinDate: string;
   lastActive: string;
 }
-
-// Mock data - Will be replaced with API calls
 const mockUsers: User[] = [
   {
     id: 1,
@@ -72,24 +68,20 @@ const mockUsers: User[] = [
     lastActive: "2023-06-10T11:30:00Z",
   },
 ];
-
 const statusVariantMap = {
   active: "default",
   inactive: "secondary",
   suspended: "destructive",
 } as const;
-
 const roleVariantMap = {
   admin: "default",
   futsal_owner: "outline",
   user: "secondary",
 } as const;
-
 const Users = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRole, setSelectedRole] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
-
   const filteredUsers = mockUsers.filter((user) => {
     const matchesSearch =
       user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -97,10 +89,8 @@ const Users = () => {
     const matchesRole = selectedRole === "all" || user.role === selectedRole;
     const matchesStatus =
       selectedStatus === "all" || user.status === selectedStatus;
-
     return matchesSearch && matchesRole && matchesStatus;
   });
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -110,7 +100,6 @@ const Users = () => {
           Add New User
         </Button>
       </div>
-
       <Card>
         <CardHeader className="pb-0">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -222,5 +211,4 @@ const Users = () => {
     </div>
   );
 };
-
 export default Users;

@@ -3,7 +3,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@ui/dialog";
 import { apiQuery, apiMutation } from "@/shared/lib/apiWrapper";
 import { Button } from "@ui/button";
 import { toast } from "sonner";
-
 export function UserBookingsDialog({
   open,
   onOpenChange,
@@ -15,7 +14,6 @@ export function UserBookingsDialog({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [retryLoadingId, setRetryLoadingId] = useState<string | null>(null);
-
   useEffect(() => {
     if (!open) return;
     setLoading(true);
@@ -24,7 +22,6 @@ export function UserBookingsDialog({
     apiQuery("bookings/me")
       .then((res: any) => {
         console.log("Bookings API response:", res);
-        // The API returns { success, count, data } where data contains the bookings array
         const bookingsData = res?.data || [];
         console.log("Processed bookings data:", bookingsData);
         setBookings(bookingsData);
@@ -38,7 +35,6 @@ export function UserBookingsDialog({
       })
       .finally(() => setLoading(false));
   }, [open]);
-
   const handleRetryPayment = async (bookingId: string, price: number) => {
     setRetryLoadingId(bookingId);
     try {
@@ -65,7 +61,6 @@ export function UserBookingsDialog({
       setRetryLoadingId(null);
     }
   };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[80vh] min-h-[40vh] min-w-[50vw] overflow-y-auto bg-background">

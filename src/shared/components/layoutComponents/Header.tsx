@@ -38,7 +38,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/components/ui/dialog";
-
 const Header = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
@@ -51,8 +50,6 @@ const Header = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isMfaEnabled, setIsMfaEnabled] = useState(false);
   const [forgotLoading, setForgotLoading] = useState(false);
-
-  // Fetch MFA status when user is authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
       setIsMfaEnabled(user.isMfaEnabled || false);
@@ -60,7 +57,6 @@ const Header = () => {
       setIsMfaEnabled(false);
     }
   }, [isAuthenticated, user]);
-
   const handleForgotPassword = async () => {
     if (!user?.email) {
       toast.error("Email not available. Please try logging in again.");
@@ -87,19 +83,15 @@ const Header = () => {
       setForgotLoading(false);
     }
   };
-
   const handleProfilePictureUpload = async ({ image }: { image: File }) => {
     if (!image) return;
-
     setIsUploading(true);
     const formData = new FormData();
     formData.append("image", image);
-
     try {
       const endpoint = user?.profileImage
         ? "users/update-profile-image"
         : "users/upload-profile-image";
-
       await apiMutation({
         method: "POST",
         endpoint,
@@ -108,11 +100,8 @@ const Header = () => {
           "Content-Type": "multipart/form-data",
         },
       });
-
-      // Close the dialog and refresh the page
       setShowImageUploader(false);
       window.location.reload();
-
       toast.success("Profile picture updated successfully");
     } catch (error) {
       console.error("Error uploading profile picture:", error);
@@ -121,7 +110,6 @@ const Header = () => {
       setIsUploading(false);
     }
   };
-
   return (
     <div className="flex items-center justify-between bg-black py-4 pt-5 pl-5">
       <a href="/">
@@ -143,9 +131,7 @@ const Header = () => {
               Contact Us
             </Link>
           </div>
-
           {isAuthenticated ? (
-            // Logged in state
             <div className="flex items-center gap-2">
               <li className="flex items-center gap-2">
                 {user?.role === "user" && (
@@ -157,7 +143,6 @@ const Header = () => {
                     <Heart className="w-6 h-6" />
                   </button>
                 )}
-
                 <div className="relative">
                   <DropdownMenu
                     open={isDropdownOpen}
@@ -168,7 +153,6 @@ const Header = () => {
                         className="relative p-2"
                         aria-label="Notifications"
                         onClick={() => {
-                          // Mark all as read when opening the dropdown
                           if (!isDropdownOpen && unreadCount > 0) {
                             const unreadIds = notifications
                               .filter((n) => !n.isRead)
@@ -191,12 +175,10 @@ const Header = () => {
                       align="end"
                       sideOffset={8}
                       onInteractOutside={() => {
-                        // Mark all visible notifications as read when clicking outside
                         const visibleUnreadNotifications = notifications
                           .slice(0, 8)
                           .filter((n) => !n.isRead)
                           .map((n) => n._id);
-
                         if (visibleUnreadNotifications.length > 0) {
                           markAsRead(visibleUnreadNotifications);
                         }
@@ -225,7 +207,6 @@ const Header = () => {
                           )}
                         </div>
                       </div>
-
                       <div className="divide-y max-h-[calc(500px-57px)] overflow-y-auto">
                         {isLoading ? (
                           <div className="p-6 text-center text-muted-foreground text-sm">
@@ -243,7 +224,6 @@ const Header = () => {
                             .slice(0, 8)
                             .map((notification) => {
                               if (!notification?._id) return null;
-
                               const notificationDate =
                                 notification.time || notification.createdAt;
                               const formattedDate = notificationDate
@@ -264,20 +244,15 @@ const Header = () => {
                                     },
                                   )
                                 : "Just now";
-
                               return (
                                 <div
                                   key={notification._id}
                                   className={`relative px-4 py-3 hover:bg-accent/50 transition-colors cursor-pointer group ${!notification.isRead ? "bg-accent/30" : ""}`}
                                   onClick={async (e) => {
                                     e.stopPropagation();
-
-                                    // Mark as read if not already read
                                     if (!notification.isRead) {
                                       await markAsRead([notification._id]);
                                     }
-
-                                    // Navigate to relevant page
                                     if (notification.meta?.booking) {
                                       navigate(
                                         `/bookings/${notification.meta.booking}`,
@@ -329,7 +304,6 @@ const Header = () => {
                   </DropdownMenu>
                 </div>
               </li>
-
               <li>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -356,8 +330,7 @@ const Header = () => {
                       </p>
                     </div>
                     <DropdownMenuSeparator />
-
-                    {/* User-specific menu items */}
+                    {}
                     {user?.role === "user" && (
                       <>
                         <DropdownMenuItem
@@ -397,8 +370,7 @@ const Header = () => {
                         </DropdownMenuItem>
                       </>
                     )}
-
-                    {/* Futsal Owner-specific menu items */}
+                    {}
                     {user?.role === "futsalOwner" && (
                       <>
                         <DropdownMenuItem
@@ -414,8 +386,7 @@ const Header = () => {
                         </DropdownMenuItem>
                       </>
                     )}
-
-                    {/* Admin-specific menu items */}
+                    {}
                     {user?.role === "admin" && (
                       <>
                         <DropdownMenuItem
@@ -435,7 +406,6 @@ const Header = () => {
               </li>
             </div>
           ) : (
-            // Not logged in state
             <li className="flex gap-2">
               <Button variant="reverse" onClick={() => navigate("/login")}>
                 Login
@@ -486,10 +456,9 @@ const Header = () => {
                   Book Futsal
                 </Link>
               </SheetClose>
-
               {isAuthenticated ? (
                 <div className="pt-4 mt-4 border-t">
-                  {/* User-specific mobile menu items */}
+                  {}
                   {user?.role === "user" && (
                     <>
                       <SheetClose asChild>
@@ -547,8 +516,7 @@ const Header = () => {
                       </SheetClose>
                     </>
                   )}
-
-                  {/* Futsal Owner-specific mobile menu items */}
+                  {}
                   {user?.role === "futsalOwner" && (
                     <>
                       <SheetClose asChild>
@@ -569,8 +537,7 @@ const Header = () => {
                       </SheetClose>
                     </>
                   )}
-
-                  {/* Admin-specific mobile menu items */}
+                  {}
                   {user?.role === "admin" && (
                     <>
                       <SheetClose asChild>
@@ -617,8 +584,7 @@ const Header = () => {
           </div>
         </SheetContent>
       </Sheet>
-
-      {/* Favorites Dialog */}
+      {}
       <FavoritesDialog
         open={isFavoritesOpen}
         onOpenChange={setIsFavoritesOpen}
@@ -627,8 +593,7 @@ const Header = () => {
         open={isBookingsOpen}
         onOpenChange={setIsBookingsOpen}
       />
-
-      {/* Image Uploader Dialog */}
+      {}
       <Dialog open={showImageUploader} onOpenChange={setShowImageUploader}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -648,5 +613,4 @@ const Header = () => {
     </div>
   );
 };
-
 export default Header;

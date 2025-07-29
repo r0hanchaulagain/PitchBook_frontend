@@ -13,14 +13,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth, type User } from "@/contexts/AuthContext";
 import { GoogleOAuthButton } from "@/shared/components/ui/GoogleOAuthButton";
 import MFAVerification from "./MFAVerification";
-
 const loginSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
-  password: z.string(), // No validation for password
+  password: z.string(),
 });
-
 type LoginForm = z.infer<typeof loginSchema>;
-
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [showMFAVerification, setShowMFAVerification] = useState(false);
@@ -36,18 +33,13 @@ export default function Login() {
     resolver: zodResolver(loginSchema),
     mode: "onTouched",
   });
-
   const [forgotLoading, setForgotLoading] = useState(false);
-
   const { login } = useAuth();
-
   const [isLoading, setIsLoading] = useState(false);
-
   const handleLogin = async (data: LoginForm) => {
     try {
       setIsLoading(true);
       setLoginEmail(data.email);
-
       const response = await apiMutation<{
         user: User;
         token: string;
@@ -57,20 +49,14 @@ export default function Login() {
         endpoint: "users/login",
         body: data,
       });
-
-      // Check if MFA is required
       if (response.requiresMFA) {
         setShowMFAVerification(true);
         return;
       }
-
-      // Use AuthContext to set the user state
       const success = await login(response.user);
       if (success) {
         toast.success("Login successful! Redirecting...");
-        // Add a small delay to allow the auth state to update
         setTimeout(() => {
-          // Role-based navigation
           if (response.user.role === "admin") {
             navigate("/admin/dashboard", { replace: true });
           } else if (response.user.role === "futsalOwner") {
@@ -101,15 +87,12 @@ export default function Login() {
       setIsLoading(false);
     }
   };
-
   const handleMFAVerificationSuccess = async (user: User) => {
     try {
-      // Use the user data from MFA verification response
       const success = await login(user);
       if (success) {
         toast.success("Login successful! Redirecting...");
         setTimeout(() => {
-          // Role-based navigation
           if (user.role === "admin") {
             navigate("/admin/dashboard", { replace: true });
           } else if (user.role === "futsalOwner") {
@@ -126,7 +109,6 @@ export default function Login() {
       toast.error("Failed to complete login. Please try again.");
     }
   };
-
   async function handleForgotPassword(e: React.MouseEvent) {
     e.preventDefault();
     if (!getValues || !getValues("email")) {
@@ -156,8 +138,6 @@ export default function Login() {
       setForgotLoading(false);
     }
   }
-
-  // Show MFA verification if required
   if (showMFAVerification) {
     return (
       <MFAVerification
@@ -167,7 +147,6 @@ export default function Login() {
       />
     );
   }
-
   return (
     <>
       <div className="bg-background flex min-h-screen items-center justify-center">
@@ -180,12 +159,11 @@ export default function Login() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {/* Google OAuth Button */}
+                {}
                 <div className="mb-6">
                   <GoogleOAuthButton />
                 </div>
-
-                {/* Divider */}
+                {}
                 <div className="relative mb-6">
                   <div className="absolute inset-0 flex items-center">
                     <span className="w-full border-t" />
@@ -196,7 +174,6 @@ export default function Login() {
                     </span>
                   </div>
                 </div>
-
                 <form
                   onSubmit={handleSubmit(handleLogin)}
                   className="space-y-5"

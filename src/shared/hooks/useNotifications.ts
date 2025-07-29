@@ -1,5 +1,4 @@
 import { useNotifications as useNotificationsContext } from "@/contexts/NotificationsContext";
-
 export interface Notification {
   _id: string;
   user: string;
@@ -21,7 +20,6 @@ export interface Notification {
   time?: string;
   unread?: boolean;
 }
-
 export function useNotifications(futsalId?: string) {
   const {
     notifications,
@@ -31,21 +29,17 @@ export function useNotifications(futsalId?: string) {
     isLoading,
     error,
   } = useNotificationsContext();
-
-  // Filter notifications by futsalId if provided
   const filteredNotifications = futsalId
     ? notifications.filter((n) => n?.meta?.futsal === futsalId)
     : notifications;
-
   return {
     data: filteredNotifications,
-    notifications: filteredNotifications, // For backward compatibility
+    notifications: filteredNotifications,
     unreadCount,
     markAsRead,
     markAllAsRead,
     isLoading,
     error,
-    // For backward compatibility with existing code
     refetch: () => {},
     isFetching: false,
   };

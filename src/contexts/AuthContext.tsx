@@ -10,7 +10,6 @@ import {
 import { apiQuery, resetRefreshAttempts } from "@lib/apiWrapper";
 import { socketService } from "@lib/socket";
 import { setAuthStatus } from "@/shared/store/favoritesStore";
-
 export interface User {
   id: string;
   email: string;
@@ -22,10 +21,9 @@ export interface User {
   lastActive?: string;
   isOAuthUser?: boolean;
   oauthProvider?: string;
-  authProvider?: string; // Backend sends this property
+  authProvider?: string;
   isMfaEnabled?: boolean;
 }
-
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
@@ -33,34 +31,25 @@ interface AuthContextType {
   login: (userData: User) => Promise<boolean>;
   logout: () => Promise<void>;
   setUser: (user: User | null) => void;
-  // refreshUser: () => Promise<void>;
 }
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [userState, setUserState] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-
-  // Function to fetch and update user data
   const fetchUser = useCallback(async (): Promise<User | null> => {
     try {
       const response = await apiQuery<{ user: User }>("users/me");
       return response.user;
     } catch (error) {
-      // If the API call fails, the session is invalid
       return null;
     }
   }, []);
-
   const login = async (userData: User): Promise<boolean> => {
     try {
       setUserState(userData);
-      // Reset refresh attempts after successful login
       resetRefreshAttempts();
-      // Initialize WebSocket connection after successful login
-      const token = localStorage.getItem("token"); // Assuming you store JWT in localStorage
+      const token = localStorage.getItem("token");
       if (token) {
         socketService.connect(token);
       }
@@ -71,57 +60,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return false;
     }
   };
-
-  /**
-   * Logs the user out by disconnecting the WebSocket,
-   * making an API call to the logout endpoint, and
-   * clearing the user state and local storage token.
-   */
   const logout = async () => {
     try {
-      // Disconnect WebSocket
       socketService.disconnect();
-
-      // Call the logout API
       const response = await apiQuery<{
         message: string;
         isOAuthUser: boolean;
         googleLogoutUrl?: string;
       }>("users/logout");
-
-      // Clear local state
       setUserState(null);
       resetRefreshAttempts();
-
-      // Handle OAuth vs regular logout
       if (response.isOAuthUser && response.googleLogoutUrl) {
-        // OAuth user: redirect to Google logout
         window.location.href = response.googleLogoutUrl;
       } else {
-        // Regular user: redirect to login page
         window.location.href = "/login";
       }
     } catch (error) {
       console.error("Logout error:", error);
-      // Fallback: clear state and redirect to login
       setUserState(null);
       resetRefreshAttempts();
       window.location.href = "/login";
     }
   };
-
-  // Function to manually refresh user data
-  // Note: Currently not used, but keeping for future use
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const refreshUser = useCallback(async () => {
     if (isRefreshing) return;
-
     setIsRefreshing(true);
     try {
       const userData = await fetchUser();
       setUserState(userData);
-
-      // Initialize WebSocket connection if user is authenticated
       if (userData) {
         const token = localStorage.getItem("token");
         if (token) {
@@ -133,11 +99,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsRefreshing(false);
     }
   }, [fetchUser, isRefreshing]);
-
   const updateUser = useCallback((newUser: User | null) => {
     setUserState(newUser);
   }, []);
-
   const contextValue = useMemo(
     () => ({
       user: userState,
@@ -149,13 +113,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }),
     [userState, isLoading, isRefreshing, login, logout, updateUser],
   );
-
-  // Update favorites store authentication status when user state changes
   useEffect(() => {
     setAuthStatus(!!userState);
   }, [userState]);
-
-  // Check authentication status on mount
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -167,21 +127,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setIsLoading(false);
       }
     };
-
     checkAuth();
   }, [fetchUser]);
-
-  // Only render children once we've checked auth state
-  // This prevents flash of unauthorized content
   if (isLoading) {
-    return null; // or return a loading spinner
+    return null;
   }
-
   return (
     <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 };
-
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
@@ -189,5 +143,4 @@ export const useAuth = () => {
   }
   return context;
 };
-
 export default AuthContext;
