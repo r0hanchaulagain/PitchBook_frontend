@@ -86,45 +86,48 @@ export const NotificationsProvider = ({
     });
   }, []);
 
-  const markAsRead = useCallback(async (notificationIds: string[]) => {
-    if (!notificationIds.length || !isAuthenticated) return;
+  const markAsRead = useCallback(
+    async (notificationIds: string[]) => {
+      if (!notificationIds.length || !isAuthenticated) return;
 
-    try {
-      // Optimistic update
-      setNotifications((prev) =>
-        prev.map((n) =>
-          notificationIds.includes(n._id) ? { ...n, isRead: true } : n,
-        ),
-      );
+      try {
+        // Optimistic update
+        setNotifications((prev) =>
+          prev.map((n) =>
+            notificationIds.includes(n._id) ? { ...n, isRead: true } : n,
+          ),
+        );
 
-      // Call the API to mark as read using apiMutation for POST request
-      await apiMutation({
-        method: "POST",
-        endpoint: "notifications/mark-read",
-        body: { notificationIds },
-      });
+        // Call the API to mark as read using apiMutation for POST request
+        await apiMutation({
+          method: "POST",
+          endpoint: "notifications/mark-read",
+          body: { notificationIds },
+        });
 
-      // The server will emit a notification:read event through WebSocket
-      // which will be handled by the socket listener
-    } catch (err) {
-      console.error("Failed to mark notification as read:", err);
-      // Revert on error
-      setNotifications((prev) =>
-        prev.map((n) =>
-          notificationIds.includes(n._id) ? { ...n, isRead: false } : n,
-        ),
-      );
-      setError(
-        err instanceof Error
-          ? err
-          : new Error("Failed to mark notification as read"),
-      );
-    }
-  }, [isAuthenticated]);
+        // The server will emit a notification:read event through WebSocket
+        // which will be handled by the socket listener
+      } catch (err) {
+        console.error("Failed to mark notification as read:", err);
+        // Revert on error
+        setNotifications((prev) =>
+          prev.map((n) =>
+            notificationIds.includes(n._id) ? { ...n, isRead: false } : n,
+          ),
+        );
+        setError(
+          err instanceof Error
+            ? err
+            : new Error("Failed to mark notification as read"),
+        );
+      }
+    },
+    [isAuthenticated],
+  );
 
   const markAllAsRead = useCallback(async () => {
     if (!isAuthenticated) return;
-    
+
     try {
       const unreadIds = notifications
         .filter((n) => !n.isRead)

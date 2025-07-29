@@ -61,32 +61,34 @@ async function getValidCsrfToken(): Promise<string> {
 // Helper to refresh access token
 async function refreshAccessToken() {
   const now = Date.now();
-  
+
   // Check if we've exceeded max attempts
   if (refreshAttempts >= MAX_REFRESH_ATTEMPTS) {
-    console.debug("[refreshAccessToken] Max refresh attempts reached, skipping...");
+    console.debug(
+      "[refreshAccessToken] Max refresh attempts reached, skipping...",
+    );
     throw new Error("Max refresh attempts reached");
   }
-  
+
   // Check cooldown period
   if (now - lastRefreshAttempt < REFRESH_COOLDOWN) {
     console.debug("[refreshAccessToken] Refresh cooldown active, skipping...");
     throw new Error("Refresh cooldown active");
   }
-  
+
   try {
     console.debug("[refreshAccessToken] Attempting refresh...");
     refreshAttempts++;
     lastRefreshAttempt = now;
-    
+
     // Use internalApiMutation to avoid infinite recursion
     const csrfToken = await getValidCsrfToken();
-    await internalApiMutation({ 
-      method: "POST", 
+    await internalApiMutation({
+      method: "POST",
       endpoint: "users/refresh-token",
-      headers: { "X-CSRF-Token": csrfToken }
+      headers: { "X-CSRF-Token": csrfToken },
     });
-    
+
     console.debug("[refreshAccessToken] Refresh succeeded.");
     // Reset attempts on success
     refreshAttempts = 0;

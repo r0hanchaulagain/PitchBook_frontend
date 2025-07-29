@@ -20,6 +20,10 @@ export interface User {
   favoritesFutsal?: string[];
   createdAt?: string;
   lastActive?: string;
+  isOAuthUser?: boolean;
+  oauthProvider?: string;
+  authProvider?: string; // Backend sends this property
+  isMfaEnabled?: boolean;
 }
 
 interface AuthContextType {
@@ -77,32 +81,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       // Disconnect WebSocket
       socketService.disconnect();
-      
+
       // Call the logout API
       const response = await apiQuery<{
         message: string;
         isOAuthUser: boolean;
         googleLogoutUrl?: string;
       }>("users/logout");
-      
+
       // Clear local state
       setUserState(null);
       resetRefreshAttempts();
-      
+
       // Handle OAuth vs regular logout
       if (response.isOAuthUser && response.googleLogoutUrl) {
         // OAuth user: redirect to Google logout
         window.location.href = response.googleLogoutUrl;
       } else {
         // Regular user: redirect to login page
-        window.location.href = '/login';
+        window.location.href = "/login";
       }
     } catch (error) {
       console.error("Logout error:", error);
       // Fallback: clear state and redirect to login
       setUserState(null);
       resetRefreshAttempts();
-      window.location.href = '/login';
+      window.location.href = "/login";
     }
   };
 

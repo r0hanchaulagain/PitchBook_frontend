@@ -22,7 +22,9 @@ export const favoritesApi = {
 
   isFavorited: async (futsalId: string) => {
     try {
-      const response = await apiQuery("users/favorites") as { favorites: Array<{ _id: string }> };
+      const response = (await apiQuery("users/favorites")) as {
+        favorites: Array<{ _id: string }>;
+      };
       return response.favorites.some((f) => f._id === futsalId);
     } catch (error) {
       console.error("Error checking if futsal is favorited:", error);
@@ -34,7 +36,7 @@ export const favoritesApi = {
 // Hook to check if user is authenticated before making favorites API calls
 export const useFavoritesWithAuth = () => {
   const { isAuthenticated } = useAuth();
-  
+
   return {
     addToFavorites: async (futsalId: string) => {
       if (!isAuthenticated) {
@@ -42,21 +44,21 @@ export const useFavoritesWithAuth = () => {
       }
       return favoritesApi.addToFavorites(futsalId);
     },
-    
+
     removeFromFavorites: async (futsalId: string) => {
       if (!isAuthenticated) {
         throw new Error("User must be authenticated to remove favorites");
       }
       return favoritesApi.removeFromFavorites(futsalId);
     },
-    
+
     getFavoriteFutsals: async () => {
       if (!isAuthenticated) {
         return { favorites: [] };
       }
       return favoritesApi.getFavoriteFutsals();
     },
-    
+
     isFavorited: async (futsalId: string) => {
       if (!isAuthenticated) {
         return false;

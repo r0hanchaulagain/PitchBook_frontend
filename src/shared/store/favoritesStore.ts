@@ -58,7 +58,7 @@ export const useFavoritesStore = create<FavoritesState>((set, get) => ({
         set({ favorites: [], isLoading: false });
         return;
       }
-      
+
       const response = (await favoritesApi.getFavoriteFutsals()) as {
         favorites: Futsal[];
       };
