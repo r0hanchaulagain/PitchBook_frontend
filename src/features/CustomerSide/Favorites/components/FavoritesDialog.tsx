@@ -36,9 +36,9 @@ export const FavoritesDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[80vh] min-h-[50vh] min-w-[50vw] overflow-y-auto overflow-x-hidden bg-background">
+      <DialogContent className="flex flex-col justify-start items-start max-h-[80vh] min-h-fit min-w-[60vw] overflow-y-auto overflow-x-hidden bg-background">
         <DialogHeader>
-          <DialogTitle className="flex justify items-center gap-2 text-foreground">
+          <DialogTitle className="flex justify-start items-start gap-2 text-foreground">
             <Heart className="h-5 w-5 text-primary fill-primary" />
             Your Favorite Futsals
           </DialogTitle>
@@ -69,7 +69,7 @@ export const FavoritesDialog = ({
               </Button>
             </div>
           ) : (
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col items-start gap-3">
               {favorites.map((futsal) => {
                 const card = mapFutsalToCard(futsal);
                 return (
